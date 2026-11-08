@@ -83,7 +83,21 @@ async function main() {
     console.log(`saved ${target} (${image.getSize().width}x${image.getSize().height})`)
   }
 
+  // The dashboard grew a third row, so give the docs shot enough height to show
+  // every card and the footer instead of clipping the last row.
+  const overflow = await win.webContents.executeJavaScript(`(() => {
+    const node = document.querySelector('.content')
+    return node ? Math.max(0, Math.ceil(node.scrollHeight - node.clientHeight)) : 0
+  })()`)
+  if (overflow > 0) {
+    win.setContentSize(1164, 901 + overflow + 4)
+    await delay(700)
+  }
   await capture('01-home')
+  if (overflow > 0) {
+    win.setContentSize(1164, 901)
+    await delay(400)
+  }
 
   await win.webContents.executeJavaScript(`(() => {
     const tabs = [...document.querySelectorAll('.home-switch button')]
@@ -138,10 +152,54 @@ async function main() {
     await window.api.markets.refresh().catch(() => null)
   })()`)
   await delay(900)
+  await win.webContents.executeJavaScript(`(() => {
+    const row = [...document.querySelectorAll('.market-row')].find((item) =>
+      item.textContent?.includes('Bitcoin')
+    )
+    row?.querySelector('.market-chart-toggle')?.click()
+  })()`)
+  await win.webContents.executeJavaScript(`new Promise((resolve) => {
+    const started = Date.now()
+    const timer = setInterval(() => {
+      if (document.querySelector('.market-chart-svg') || Date.now() - started > 10000) {
+        clearInterval(timer)
+        resolve(true)
+      }
+    }, 200)
+  })`)
+  await delay(400)
   await capture('01f-crypto-watch')
 
   await win.webContents.executeJavaScript(`document.querySelector('.back-button')?.click()`)
   await delay(400)
+
+  await win.webContents.executeJavaScript(`(() => {
+    const tabs = [...document.querySelectorAll('.home-switch button')]
+    tabs[0]?.click()
+  })()`)
+  await delay(500)
+  await win.webContents.executeJavaScript(`(() => {
+    const card = [...document.querySelectorAll('.tool-card')].find(
+      (item) => item.querySelector('h3')?.textContent === 'AI launchpad'
+    )
+    card?.click()
+  })()`)
+  await delay(1200)
+  await capture('01g-launchpad')
+
+  await win.webContents.executeJavaScript(
+    `document.querySelector('.launchpad-strip .ghost-button')?.click()`
+  )
+  await delay(700)
+  await capture('01g2-launchpad-manage')
+
+  await win.webContents.executeJavaScript(`document.querySelector('.back-button')?.click()`)
+  await delay(400)
+  await win.webContents.executeJavaScript(`(() => {
+    const tabs = [...document.querySelectorAll('.home-switch button')]
+    tabs[1]?.click()
+  })()`)
+  await delay(500)
 
   await win.webContents.executeJavaScript(`(() => {
     const card = [...document.querySelectorAll('.tool-card')].find(
@@ -150,7 +208,7 @@ async function main() {
     card?.click()
   })()`)
   await delay(7000)
-  await captureWindow('01g-artistwave')
+  await captureWindow('01h-artistwave')
 
   await win.webContents.executeJavaScript(`document.querySelector('.player-stop')?.click()`)
   await delay(400)
@@ -169,7 +227,7 @@ async function main() {
     card?.click()
   })()`)
   await delay(1200)
-  await capture('01h-bartender')
+  await capture('01i-bartender')
 
   await win.webContents.executeJavaScript(`(async () => {
     document.querySelector('.bartender-results')?.scrollIntoView({ block: 'start' })
@@ -179,7 +237,7 @@ async function main() {
     document.querySelector('.bartender-results')?.scrollIntoView({ block: 'start' })
   })()`)
   await delay(500)
-  await capture('01i-bartender-recipe')
+  await capture('01j-bartender-recipe')
 
   await win.webContents.executeJavaScript(`document.querySelector('.back-button')?.click()`)
   await delay(400)

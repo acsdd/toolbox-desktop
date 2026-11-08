@@ -40,7 +40,7 @@ import {
   stopGitHub
 } from './services/github'
 import { addFeed, getFeedStatus, initFeeds, openFeedItem, refreshFeeds, removeFeed } from './services/feeds'
-import { getMarketStatus, initMarkets, refreshMarkets, setMarketWatchlist } from './services/markets'
+import { getMarketSeries, getMarketStatus, initMarkets, refreshMarkets, setMarketWatchlist } from './services/markets'
 import {
   getBartenderStatus,
   initBartender,
@@ -59,6 +59,15 @@ import {
   stopArtistWave
 } from './services/artistwave'
 import { checkForUpdate, getAppVersion, openUpdatePage } from './services/updates'
+import {
+  addShortcut,
+  getShortcutStatus,
+  initShortcuts,
+  openShortcut,
+  removeShortcut,
+  rescanShortcuts,
+  toggleShortcut
+} from './services/shortcuts'
 
 let restoreBounds: { bounds: Electron.Rectangle; maximized: boolean } | null = null
 let playerMiniRestore: { bounds: Electron.Rectangle; maximized: boolean } | null = null
@@ -244,6 +253,7 @@ function registerIpc(): void {
   ipcMain.handle('markets:status', () => getMarketStatus())
   ipcMain.handle('markets:refresh', () => refreshMarkets())
   ipcMain.handle('markets:set-watchlist', (_event, ids: unknown) => setMarketWatchlist(ids))
+  ipcMain.handle('markets:series', (_event, id: unknown, days: unknown) => getMarketSeries(id, days))
 
   ipcMain.handle('bartender:status', async () => {
     await initBartender()
@@ -270,6 +280,15 @@ function registerIpc(): void {
   ipcMain.handle('updates:version', () => getAppVersion())
   ipcMain.handle('updates:check', (_event, source: unknown) => checkForUpdate(source))
   ipcMain.handle('updates:open', (_event, url: unknown) => openUpdatePage(url))
+
+  ipcMain.handle('shortcuts:status', () => getShortcutStatus())
+  ipcMain.handle('shortcuts:toggle', (_event, id: unknown, enabled: unknown) =>
+    toggleShortcut(id, enabled)
+  )
+  ipcMain.handle('shortcuts:add', (_event, input: unknown) => addShortcut(input))
+  ipcMain.handle('shortcuts:remove', (_event, id: unknown) => removeShortcut(id))
+  ipcMain.handle('shortcuts:rescan', () => rescanShortcuts())
+  ipcMain.handle('shortcuts:open', (_event, id: unknown) => openShortcut(id))
 }
 
 function createWindow(): void {
@@ -328,6 +347,7 @@ app.whenReady().then(() => {
   void initFeeds()
   void initMarkets()
   void initBartender()
+  void initShortcuts()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

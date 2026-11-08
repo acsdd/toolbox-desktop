@@ -13,6 +13,7 @@ import type {
 } from '../../shared/types'
 import { exportSecretValues, replaceSecretValues } from './vault'
 import type { VaultExportEntry } from './vault'
+import { APP_VERSION } from '../version'
 
 const MAGIC = Buffer.from('TBX1', 'ascii')
 const FORMAT_VERSION = 1
@@ -304,7 +305,7 @@ export async function createBackup(input: unknown): Promise<BackupCreateResult> 
     format: 'toolbox-backup',
     version: 1,
     createdAt,
-    appVersion: app.getVersion(),
+    appVersion: APP_VERSION,
     config: sanitizeConfig(request.config),
     secrets
   }

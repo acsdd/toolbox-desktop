@@ -21,7 +21,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "smoke": "npm run build && electron scripts/smoke.cjs",
     "screenshots": "npm run build && electron scripts/screenshots.cjs",
-    "dist": "npm run build && electron-builder --win"
+    "dist": "npm run build && electron-builder --win",
+    "release:notes": "node scripts/release-notes.cjs",
+    "site:links": "node scripts/check-site-links.cjs website",
+    "site:version": "node scripts/inject-site-version.cjs"
   },
   "build": {
     "appId": "com.alpha.toolbox",

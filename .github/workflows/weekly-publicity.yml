@@ -1,0 +1,46 @@
+name: Weekly publicity checklist
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: weekly-publicity
+  cancel-in-progress: false
+
+jobs:
+  checklist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create or update the weekly checklist issue
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh label create publicity-weekly \
+            --color 1d76db \
+            --description "Weekly publicity checklist" 2>/dev/null || true
+
+          existing="$(gh issue list \
+            --label publicity-weekly \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')"
+
+          if [ -n "$existing" ]; then
+            echo "Weekly checklist issue #$existing is already open; nothing to do."
+            exit 0
+          fi
+
+          gh issue create \
+            --title "Weekly publicity checklist" \
+            --label publicity-weekly \
+            --body-file docs/publicity/weekly-checklist.md

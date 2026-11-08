@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useId, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import type { MarketStatus } from '@shared/types'
+import type { MarketCoin, MarketRange, MarketSeries, MarketStatus } from '@shared/types'
 import { Icon } from '../../components/Icon'
 import { relativeTime } from '../../lib/format'
 import type { ToolDefinition } from '../types'
@@ -14,6 +14,22 @@ const POPULAR = [
   { id: 'dogecoin', label: 'Dogecoin' },
   { id: 'chainlink', label: 'Chainlink' }
 ]
+const RANGES: { days: MarketRange; label: string; name: string }[] = [
+  { days: 30, label: '1M', name: '1 month' },
+  { days: 90, label: '3M', name: '3 months' },
+  { days: 180, label: '6M', name: '6 months' }
+]
+const RANGE_KEY = 'toolbox.markets.range'
+
+function storedRange(): MarketRange {
+  try {
+    const value = Number(window.localStorage.getItem(RANGE_KEY))
+    const match = RANGES.find((range) => range.days === value)
+    return match ? match.days : 90
+  } catch {
+    return 90
+  }
+}
 
 function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause)
@@ -69,12 +85,193 @@ function changeClass(value: number | null): string {
   return value > 0 ? 'up' : 'down'
 }
 
+function formatDay(value: number): string {
+  try {
+    return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(
+      new Date(value)
+    )
+  } catch {
+    return ''
+  }
+}
+
+function rangeName(days: MarketRange): string {
+  return RANGES.find((range) => range.days === days)?.name ?? '3 months'
+}
+
+interface MarketChartProps {
+  coin: MarketCoin
+  range: MarketRange
+  series: MarketSeries | null
+  loading: boolean
+  error: string | null
+  onRange: (range: MarketRange) => void
+  onRetry: () => void
+  onClose: () => void
+}
+
+function MarketChart({
+  coin,
+  range,
+  series,
+  loading,
+  error,
+  onRange,
+  onRetry,
+  onClose
+}: MarketChartProps) {
+  const gradientId = `market-gradient-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
+  const chart = useMemo(() => {
+    if (!series || series.points.length < 2) return null
+
+    const width = 640
+    const height = 200
+    const padX = 4
+    const padTop = 12
+    const padBottom = 6
+    const span = series.high - series.low
+    const margin = span > 0 ? span * 0.06 : Math.max(series.high * 0.02, 1)
+    const min = series.low - margin
+    const max = series.high + margin
+    const scale = max - min || 1
+    const x = (index: number) =>
+      padX + (index / (series.points.length - 1)) * (width - padX * 2)
+    const y = (price: number) =>
+      padTop + (1 - (price - min) / scale) * (height - padTop - padBottom)
+    const line = series.points
+      .map(
+        (point, index) =>
+          `${index === 0 ? 'M' : 'L'}${x(index).toFixed(2)},${y(point.p).toFixed(2)}`
+      )
+      .join(' ')
+    const baseline = height - padBottom
+    const area = `${line} L${x(series.points.length - 1).toFixed(2)},${baseline} L${padX},${baseline} Z`
+    const last = series.points[series.points.length - 1]
+
+    return {
+      width,
+      height,
+      line,
+      area,
+      baseline,
+      lastX: x(series.points.length - 1),
+      lastY: y(last.p)
+    }
+  }, [series])
+
+  const tone = changeClass(series?.change ?? null)
+  const firstDay = series ? formatDay(series.points[0].t) : ''
+  const lastDay = series ? formatDay(series.points[series.points.length - 1].t) : ''
+
+  return (
+    <div className={`market-chart ${tone}`}>
+      <div className="market-chart-head">
+        <div className="market-chart-name">
+          <strong>
+            {coin.name} · {rangeName(range)}
+          </strong>
+          <span>
+            {series ? `${firstDay} – ${lastDay} · ${coin.symbol}/USD` : `${coin.symbol}/USD`}
+          </span>
+        </div>
+
+        <div className={`market-chart-change ${tone}`}>
+          <strong>{loading ? '…' : changeLabel(series?.change ?? null)}</strong>
+          <span>{RANGES.find((item) => item.days === range)?.label}</span>
+        </div>
+
+        <div className="market-range" role="group" aria-label="Chart range">
+          {RANGES.map((item) => (
+            <button
+              key={item.days}
+              type="button"
+              className={range === item.days ? 'active' : ''}
+              aria-pressed={range === item.days}
+              onClick={() => onRange(item.days)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className="icon-button market-chart-close"
+          onClick={onClose}
+          aria-label={`Close ${coin.name} chart`}
+        >
+          <Icon name="close" size={14} />
+        </button>
+      </div>
+
+      {error ? (
+        <div className="market-chart-status">
+          <span className="error-text">{error}</span>
+          <button type="button" className="ghost-button small" onClick={onRetry}>
+            <Icon name="refresh" size={13} />
+            Try again
+          </button>
+        </div>
+      ) : loading || !chart ? (
+        <div className="market-chart-status">
+          <span>Loading {rangeName(range)} of prices…</span>
+        </div>
+      ) : (
+        <svg
+          className="market-chart-svg"
+          viewBox={`0 0 ${chart.width} ${chart.height}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label={`${coin.name} price over the past ${rangeName(range)}`}
+        >
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="currentColor" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
+          {[0.25, 0.5, 0.75].map((ratio) => (
+            <line
+              key={ratio}
+              className="market-chart-grid"
+              x1="0"
+              x2={chart.width}
+              y1={chart.baseline * ratio}
+              y2={chart.baseline * ratio}
+            />
+          ))}
+
+          <path className="market-chart-area" d={chart.area} fill={`url(#${gradientId})`} />
+          <path className="market-chart-line" d={chart.line} />
+          <circle className="market-chart-dot" cx={chart.lastX} cy={chart.lastY} r="2.6" />
+        </svg>
+      )}
+
+      {series && !error && (
+        <div className="market-chart-foot">
+          <span>
+            High {formatPrice(series.high)} · Low {formatPrice(series.low)}
+          </span>
+          <span>CoinGecko · cached {relativeTime(series.fetchedAt)}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function MarketsTool() {
   const [status, setStatus] = useState<MarketStatus | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [chartCoin, setChartCoin] = useState<string | null>(null)
+  const [chartRange, setChartRange] = useState<MarketRange>(storedRange)
+  const [series, setSeries] = useState<MarketSeries | null>(null)
+  const [seriesLoading, setSeriesLoading] = useState(false)
+  const [seriesError, setSeriesError] = useState<string | null>(null)
+  const [seriesReload, setSeriesReload] = useState(0)
 
   useEffect(() => {
     let alive = true
@@ -96,6 +293,35 @@ function MarketsTool() {
       alive = false
     }
   }, [])
+
+  useEffect(() => {
+    if (!chartCoin) {
+      setSeries(null)
+      return
+    }
+
+    let alive = true
+    setSeriesError(null)
+    setSeriesLoading(true)
+
+    window.api.markets
+      .series(chartCoin, chartRange)
+      .then((next) => {
+        if (alive) setSeries(next)
+      })
+      .catch((cause) => {
+        if (!alive) return
+        setSeries(null)
+        setSeriesError(errorMessage(cause))
+      })
+      .finally(() => {
+        if (alive) setSeriesLoading(false)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [chartCoin, chartRange, seriesReload])
 
   const run = async (task: () => Promise<MarketStatus>) => {
     setBusy(true)
@@ -123,6 +349,7 @@ function MarketsTool() {
     await run(async () => {
       const next = await window.api.markets.setWatchlist(ids)
       setInput(next.watchlist.join(', '))
+      setChartCoin(null)
       return next
     })
   }
@@ -139,6 +366,37 @@ function MarketsTool() {
     }
     setFormError(null)
     setInput([...ids, id].join(', '))
+  }
+
+  const closeChart = () => {
+    setChartCoin(null)
+    setSeries(null)
+    setSeriesError(null)
+    setSeriesLoading(false)
+  }
+
+  const toggleChart = (id: string) => {
+    if (chartCoin === id) {
+      closeChart()
+      return
+    }
+    setSeries(null)
+    setSeriesError(null)
+    setSeriesLoading(true)
+    setChartCoin(id)
+  }
+
+  const changeRange = (next: MarketRange) => {
+    if (next === chartRange) return
+    setSeries(null)
+    setSeriesError(null)
+    setSeriesLoading(true)
+    setChartRange(next)
+    try {
+      window.localStorage.setItem(RANGE_KEY, String(next))
+    } catch {
+      // Remembering the range is a nicety; ignore storage failures.
+    }
   }
 
   if (!status) {
@@ -224,7 +482,7 @@ function MarketsTool() {
       <section className="linked-panel">
         <div className="linked-panel-head">
           <span>Watchlist</span>
-          <span>{status.coins.length > 0 ? '24h change' : ''}</span>
+          <span>{status.coins.length > 0 ? 'Price · 24h · Chart' : ''}</span>
         </div>
 
         {status.coins.length === 0 ? (
@@ -239,23 +497,49 @@ function MarketsTool() {
         ) : (
           <div className="linked-list">
             {status.coins.map((coin) => (
-              <div className="linked-row market-row" key={coin.id}>
-                <span className="market-symbol">{coin.symbol}</span>
-                <span className="market-name">
-                  <strong>{coin.name}</strong>
-                  <span>
-                    {coin.id}
-                    {coin.marketCap !== null ? ` · ${formatCap(coin.marketCap)} cap` : ''}
+              <Fragment key={coin.id}>
+                <div className={`linked-row market-row ${chartCoin === coin.id ? 'active' : ''}`}>
+                  <span className="market-symbol">{coin.symbol}</span>
+                  <span className="market-name">
+                    <strong>{coin.name}</strong>
+                    <span>
+                      {coin.id}
+                      {coin.marketCap !== null ? ` · ${formatCap(coin.marketCap)} cap` : ''}
+                    </span>
                   </span>
-                </span>
-                <span className="market-price">{formatPrice(coin.price)}</span>
-                <span
-                  className={`market-change ${changeClass(coin.change24h)}`}
-                  title="Change over the last 24 hours"
-                >
-                  {changeLabel(coin.change24h)}
-                </span>
-              </div>
+                  <span className="market-price">{formatPrice(coin.price)}</span>
+                  <span
+                    className={`market-change ${changeClass(coin.change24h)}`}
+                    title="Change over the last 24 hours"
+                  >
+                    {changeLabel(coin.change24h)}
+                  </span>
+                  <button
+                    type="button"
+                    className={`market-chart-toggle ${chartCoin === coin.id ? 'active' : ''}`}
+                    onClick={() => toggleChart(coin.id)}
+                    aria-expanded={chartCoin === coin.id}
+                    aria-label={`${chartCoin === coin.id ? 'Hide' : 'Show'} ${coin.name} price chart`}
+                    title={`${chartCoin === coin.id ? 'Hide' : 'Show'} 1, 3 or 6 month chart`}
+                  >
+                    <Icon name="chart" size={14} />
+                    <span>{chartCoin === coin.id ? 'Hide' : 'Chart'}</span>
+                  </button>
+                </div>
+
+                {chartCoin === coin.id && (
+                  <MarketChart
+                    coin={coin}
+                    range={chartRange}
+                    series={series}
+                    loading={seriesLoading}
+                    error={seriesError}
+                    onRange={changeRange}
+                    onRetry={() => setSeriesReload((value) => value + 1)}
+                    onClose={closeChart}
+                  />
+                )}
+              </Fragment>
             ))}
           </div>
         )}
@@ -267,13 +551,14 @@ function MarketsTool() {
           Prices come from the public CoinGecko API in US dollars. Use CoinGecko coin ids such as{' '}
           <code>bitcoin</code>, <code>ethereum</code>, <code>solana</code> or{' '}
           <code>avalanche-2</code>. Up to {MAX_COINS} coins are refreshed when you open this tool or
-          press refresh; no API key or account is involved.
+          press refresh; no API key or account is involved. Open a chart for 1, 3 or 6 months of
+          price history — each chart is cached for 30 minutes.
         </p>
       </div>
 
       <p className="hint">
-        <Icon name="shield" size={13} /> Only the list of coin ids is stored on this PC. Quotes are
-        informational and may be slightly delayed.
+        <Icon name="shield" size={13} /> Only the list of coin ids is stored on this PC. Charts
+        request the selected coin id only; quotes are informational and may be slightly delayed.
       </p>
     </div>
   )
@@ -282,7 +567,7 @@ function MarketsTool() {
 export const manifest: ToolDefinition = {
   id: 'markets',
   name: 'Crypto watch',
-  description: 'A compact watchlist of crypto prices and 24-hour moves.',
+  description: 'A compact watchlist with 24-hour moves and 1–6 month price charts.',
   icon: 'chart',
   accent: '#22c55e',
   order: 4,

@@ -9,6 +9,7 @@ const { app, BrowserWindow, clipboard } = require('electron')
 const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
+const packageJson = require('../package.json')
 
 const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'toolbox-smoke-userdata-'))
 app.setPath('userData', userDataDir)
@@ -362,7 +363,23 @@ async function main() {
       marketsDefaults: false,
       marketsEmptyRejected: false,
       marketsTooManyRejected: false,
+      marketsBadChartRejected: false,
+      marketsBadRangeRejected: false,
       marketsMessage: '',
+      launchpadCard: false,
+      launchpadTool: false,
+      launchpadTiles: 0,
+      launchpadStatus: null,
+      launchpadCatalog: 0,
+      launchpadDefaults: false,
+      launchpadToggleOff: false,
+      launchpadToggleOn: false,
+      launchpadToggleUnknownRejected: false,
+      launchpadCustomAdded: false,
+      launchpadCustomRemoved: false,
+      launchpadBadUrlRejected: false,
+      launchpadOpenUnknownRejected: false,
+      launchpadMessage: '',
       artistwaveCard: false,
       artistwaveTool: false,
       artistwaveLaunch: false,
@@ -549,6 +566,20 @@ async function main() {
       result.marketsMessage = String(cause?.message ?? cause)
       result.marketsTooManyRejected = /up to 8/i.test(result.marketsMessage)
     }
+
+    try {
+      await window.api.markets.series('bad id!', 90)
+    } catch (cause) {
+      result.marketsMessage = String(cause?.message ?? cause)
+      result.marketsBadChartRejected = /coingecko coin id/i.test(result.marketsMessage)
+    }
+
+    try {
+      await window.api.markets.series('bitcoin', 45)
+    } catch (cause) {
+      result.marketsMessage = String(cause?.message ?? cause)
+      result.marketsBadRangeRejected = /1, 3 or 6/i.test(result.marketsMessage)
+    }
     await back()
 
     await openCard('ArtistWave')
@@ -652,6 +683,71 @@ async function main() {
     result.backToWorkspace = tabs()[0]?.getAttribute('aria-selected') === 'true'
     result.workspaceCardsAfter = cards().length
     result.workspaceHeading = heading()
+    result.launchpadCard = result.workspaceCardsAfter > 0 &&
+      cards().some((item) => item.querySelector('h3')?.textContent === 'AI launchpad')
+
+    await openCard('AI launchpad')
+    result.launchpadTool = Boolean(document.querySelector('.launchpad'))
+    result.launchpadTiles = document.querySelectorAll('.launchpad-tile').length
+
+    try {
+      result.launchpadStatus = await window.api.shortcuts.status()
+      result.launchpadCatalog = result.launchpadStatus?.items?.length ?? 0
+      result.launchpadDefaults =
+        result.launchpadStatus?.items?.filter((item) => item.enabled).length === 10
+    } catch (cause) {
+      result.launchpadMessage = String(cause?.message ?? cause)
+    }
+
+    try {
+      const off = await window.api.shortcuts.toggle('chatgpt', false)
+      result.launchpadToggleOff =
+        off.items.find((item) => item.id === 'chatgpt')?.enabled === false
+      const on = await window.api.shortcuts.toggle('chatgpt', true)
+      result.launchpadToggleOn = on.items.find((item) => item.id === 'chatgpt')?.enabled === true
+    } catch (cause) {
+      result.launchpadMessage = String(cause?.message ?? cause)
+    }
+
+    try {
+      await window.api.shortcuts.toggle('not-a-shortcut', true)
+    } catch (cause) {
+      result.launchpadMessage = String(cause?.message ?? cause)
+      result.launchpadToggleUnknownRejected = /not part of the preset list/i.test(
+        result.launchpadMessage
+      )
+    }
+
+    try {
+      await window.api.shortcuts.add({ name: 'Bad link', url: 'ftp://example.com' })
+    } catch (cause) {
+      result.launchpadMessage = String(cause?.message ?? cause)
+      result.launchpadBadUrlRejected = /http and https/i.test(result.launchpadMessage)
+    }
+
+    try {
+      const added = await window.api.shortcuts.add({
+        name: 'Local UI',
+        url: 'http://localhost:3000'
+      })
+      const custom = added.items.find((item) => item.custom)
+      result.launchpadCustomAdded =
+        custom?.name === 'Local UI' && custom?.url === 'http://localhost:3000/'
+      const removed = custom ? await window.api.shortcuts.remove(custom.id) : null
+      result.launchpadCustomRemoved = Boolean(removed) && !removed.items.some((item) => item.custom)
+    } catch (cause) {
+      result.launchpadMessage = String(cause?.message ?? cause)
+    }
+
+    try {
+      await window.api.shortcuts.open('not-a-shortcut')
+    } catch (cause) {
+      result.launchpadMessage = String(cause?.message ?? cause)
+      result.launchpadOpenUnknownRejected = /no longer on your launchpad/i.test(
+        result.launchpadMessage
+      )
+    }
+    await back()
     return result
   })()`)
 
@@ -1156,7 +1252,7 @@ async function main() {
   }
 
   expect(ui.apiAvailable, 'preload bridge is unavailable')
-  expect(ui.cardCount === 7, `expected 7 tool cards, found ${ui.cardCount}`)
+  expect(ui.cardCount === 8, `expected 8 tool cards, found ${ui.cardCount}`)
   for (const check of ui.toolChecks) {
     expect(check.rendered, `tool "${check.name}" did not render`)
     expect(check.textLength > 10, `tool "${check.name}" rendered empty`)
@@ -1165,10 +1261,10 @@ async function main() {
   expect(ui.backupUi?.panels >= 3, 'backup tool is missing its settings panels')
   expect(ui.backupUi?.passwordFields === 2, 'backup tool is missing password confirmation')
   expect(ui.backupUi?.hasFolderPath, 'backup tool is missing its destination path')
-  expect(ui.customization?.switchCount === 13, 'manage tools did not list all switches')
-  expect(ui.customization?.afterDisableCount === 6, 'disabling a tool did not shrink the dashboard')
+  expect(ui.customization?.switchCount === 14, 'manage tools did not list all switches')
+  expect(ui.customization?.afterDisableCount === 7, 'disabling a tool did not shrink the dashboard')
   expect(ui.customization?.hiddenName, 'disabled tool remained on the dashboard')
-  expect(ui.customization?.afterEnableCount === 7, 're-enabling a tool did not restore the dashboard')
+  expect(ui.customization?.afterEnableCount === 8, 're-enabling a tool did not restore the dashboard')
   expect(ui.customization?.restored, 're-enabled tool did not reappear')
   expect(ui.clipboard?.hasCopied, 'clipboard history did not record a copy')
   expect(ui.system?.memTotal > 0, 'system stats did not report memory')
@@ -1185,6 +1281,10 @@ async function main() {
   expect(ui.backup?.wrongPasswordRejected, `wrong backup password was not rejected: ${ui.backup?.wrongPasswordMessage}`)
   expect(ui.backup?.vaultCountAfterWrong === 2, 'wrong password altered the vault')
   expect(ui.backup?.restore?.secretCount === 1, 'restore reported the wrong secret count')
+  expect(
+    ui.backup?.restore?.appVersion === packageJson.version,
+    `backup metadata reports ${ui.backup?.restore?.appVersion} instead of ${packageJson.version}`
+  )
   expect(ui.backup?.vaultCountAfterRestore === 1, 'restore did not replace the vault')
   expect(ui.backup?.restoredIdMatches, 'restored secret did not keep its id')
   expect(ui.backup?.restoredProbeGone, 'restore kept a secret added after the backup')
@@ -1217,7 +1317,7 @@ async function main() {
   expect(userToolApi.codeExportsMount, 'user tool source is missing the mount export')
   expect(userToolApi.invalidIdRejected, 'invalid user tool id was not rejected')
   expect(userToolApi.traversalRejected, 'path traversal user tool id was not rejected')
-  expect(userToolUi.cardCount === 8, `expected 8 tool cards after install, found ${userToolUi.cardCount}`)
+  expect(userToolUi.cardCount === 9, `expected 9 tool cards after install, found ${userToolUi.cardCount}`)
   expect(userToolUi.names?.includes('Text stats'), 'installed user tool is missing from the dashboard')
   expect(userToolUi.badge?.includes('User tool'), 'user tool card is missing its badge')
   expect(userToolUi.tagged, 'user tool page is missing its installed-tool banner')
@@ -1231,7 +1331,7 @@ async function main() {
       userToolUi.rowBadgeLabels?.includes('User'),
     'manage tools is missing its connected/user badges'
   )
-  expect(userToolUi.switchCount === 14, 'manage tools did not list the user tool switch')
+  expect(userToolUi.switchCount === 15, 'manage tools did not list the user tool switch')
   expect(userToolUi.userSection, 'manage tools is missing the user tools section')
   expect(userToolUi.actions?.length === 3, 'user tools panel is missing its actions')
   expect(userToolUi.errors?.length === 0, `user tool renderer errors: ${userToolUi.errors?.join(' | ')}`)
@@ -1253,7 +1353,7 @@ async function main() {
   expect(/Installed v\d+\.\d+\.\d+/.test(userToolUi.updates?.installed ?? ''), 'app updates section is missing the installed version')
   expect(userToolUi.updates?.enabledAfterSource, 'update check did not enable after entering a source')
   expect(miniEntry.miniBar, 'mini bar did not appear')
-  expect(miniEntry.toolIcons === 14, `mini bar shows ${miniEntry.toolIcons} tool icons, expected 14`)
+  expect(miniEntry.toolIcons === 15, `mini bar shows ${miniEntry.toolIcons} tool icons, expected 15`)
   expect(miniEntry.hasExpand, 'mini bar is missing the expand control')
   expect(miniEntry.hasManage, 'mini bar is missing the manage control')
   expect(miniEntry.hasPin, 'mini bar is missing the pin control')
@@ -1286,7 +1386,7 @@ async function main() {
   expect(uiRestore.notice.includes('Restored'), 'restore success message was missing')
   expect(uiRestore.storedDisabled.includes('system'), 'restored tool layout was not saved')
   expect(uiRestore.homeClass.includes('cards-large'), 'restored card size was not applied')
-  expect(uiRestore.visibleCards === 7, `restored layout shows ${uiRestore.visibleCards} cards, expected 7`)
+  expect(uiRestore.visibleCards === 8, `restored layout shows ${uiRestore.visibleCards} cards, expected 8`)
   expect(uiRestore.systemHidden, 'restored layout did not hide the system tool')
   expect(
     uiRestore.pinnedAfter === 'true' && uiRestore.pinnedClass,
@@ -1314,7 +1414,7 @@ async function main() {
   expect(clockUi.storedCity === null, 'clock persisted a city before one was chosen')
   expect(pagesUi.tabCount === 2, `expected 2 dashboard pages, found ${pagesUi.tabCount}`)
   expect(pagesUi.workspaceSelected, 'workspace page is not selected by default')
-  expect(pagesUi.workspaceCards === 7, `workspace page shows ${pagesUi.workspaceCards} cards, expected 7`)
+  expect(pagesUi.workspaceCards === 8, `workspace page shows ${pagesUi.workspaceCards} cards, expected 8`)
   expect(pagesUi.connectedSelected, 'clicking the Connected tab did not select it')
   expect(pagesUi.connectedCards === 6, `connected page shows ${pagesUi.connectedCards} cards, expected 6`)
   expect(/one dashboard/i.test(pagesUi.connectedHeading), 'connected page is missing its heading')
@@ -1362,6 +1462,38 @@ async function main() {
   expect(pagesUi.marketsDefaults, 'Crypto watch defaults are unexpected')
   expect(pagesUi.marketsEmptyRejected, `Crypto watch accepted an empty list: ${pagesUi.marketsMessage}`)
   expect(pagesUi.marketsTooManyRejected, `Crypto watch accepted too many coins: ${pagesUi.marketsMessage}`)
+  expect(
+    pagesUi.marketsBadChartRejected,
+    `Crypto chart accepted an invalid coin id: ${pagesUi.marketsMessage}`
+  )
+  expect(
+    pagesUi.marketsBadRangeRejected,
+    `Crypto chart accepted an invalid range: ${pagesUi.marketsMessage}`
+  )
+  expect(pagesUi.launchpadCard, 'AI launchpad card is missing from the workspace page')
+  expect(pagesUi.launchpadTool, 'AI launchpad did not open')
+  expect(pagesUi.launchpadTiles === 10, `AI launchpad shows ${pagesUi.launchpadTiles} tiles, expected 10`)
+  expect(
+    pagesUi.launchpadCatalog >= 25,
+    `AI launchpad catalog has only ${pagesUi.launchpadCatalog} entries`
+  )
+  expect(pagesUi.launchpadDefaults, 'AI launchpad default selection is unexpected')
+  expect(pagesUi.launchpadToggleOff, 'AI launchpad could not hide a preset')
+  expect(pagesUi.launchpadToggleOn, 'AI launchpad could not restore a preset')
+  expect(
+    pagesUi.launchpadToggleUnknownRejected,
+    `AI launchpad accepted an unknown preset: ${pagesUi.launchpadMessage}`
+  )
+  expect(
+    pagesUi.launchpadBadUrlRejected,
+    `AI launchpad accepted a non-web link: ${pagesUi.launchpadMessage}`
+  )
+  expect(pagesUi.launchpadCustomAdded, `AI launchpad custom link failed: ${pagesUi.launchpadMessage}`)
+  expect(pagesUi.launchpadCustomRemoved, 'AI launchpad could not remove a custom link')
+  expect(
+    pagesUi.launchpadOpenUnknownRejected,
+    `AI launchpad opened an unknown shortcut: ${pagesUi.launchpadMessage}`
+  )
   expect(pagesUi.artistwaveTool, 'ArtistWave player page did not open')
   expect(pagesUi.artistwaveLaunch, 'ArtistWave player is missing its embedded frame')
   expect(pagesUi.artistwaveHeader, 'ArtistWave player button is missing beside the clock')
@@ -1400,7 +1532,7 @@ async function main() {
     `Bartender Aid accepted an unknown ingredient: ${pagesUi.bartenderMessage}`
   )
   expect(pagesUi.backToWorkspace, 'could not return to the workspace page')
-  expect(pagesUi.workspaceCardsAfter === 7, 'workspace cards did not return after switching back')
+  expect(pagesUi.workspaceCardsAfter === 8, 'workspace cards did not return after switching back')
   expect(headerUi.presentHome, 'header status is missing on the dashboard')
   expect(headerUi.timeShape, 'header clock has an unexpected shape')
   expect(headerUi.dateLength > 3, 'header clock is missing its date')

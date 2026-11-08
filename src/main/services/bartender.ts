@@ -7,10 +7,10 @@ import type {
   BartenderRecipeIngredient,
   BartenderStatus
 } from '../../shared/types'
+import { USER_AGENT } from '../version'
 
 const API_URL = 'https://bartender-aid.onrender.com/api'
 const REQUEST_TIMEOUT_MS = 45000
-const USER_AGENT = 'Toolbox/0.9.0'
 const MAX_SELECTION = 60
 
 interface StoredBartender {

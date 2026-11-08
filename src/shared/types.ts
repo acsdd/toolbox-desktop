@@ -188,6 +188,23 @@ export interface MarketCoin {
   marketCap: number | null
 }
 
+export type MarketRange = 30 | 90 | 180
+
+export interface MarketSeriesPoint {
+  t: number
+  p: number
+}
+
+export interface MarketSeries {
+  id: string
+  days: MarketRange
+  points: MarketSeriesPoint[]
+  change: number | null
+  high: number
+  low: number
+  fetchedAt: number
+}
+
 export interface MarketStatus {
   watchlist: string[]
   coins: MarketCoin[]
@@ -339,6 +356,28 @@ export interface UpdateCheckResult {
   checkedAt: number
 }
 
+export type ShortcutGroup = 'assistant' | 'local' | 'developer' | 'custom'
+
+export interface ShortcutItem {
+  id: string
+  name: string
+  hint: string
+  url: string
+  group: ShortcutGroup
+  enabled: boolean
+  installed: boolean
+  custom: boolean
+}
+
+export interface ShortcutStatus {
+  items: ShortcutItem[]
+}
+
+export interface ShortcutInput {
+  name: string
+  url: string
+}
+
 export interface ToolboxApi {
   appWindow: {
     setCompact(compact: boolean, width?: number): Promise<void>
@@ -405,6 +444,7 @@ export interface ToolboxApi {
     status(): Promise<MarketStatus>
     refresh(): Promise<MarketStatus>
     setWatchlist(ids: string[]): Promise<MarketStatus>
+    series(id: string, days: MarketRange): Promise<MarketSeries>
   }
   bartender: {
     status(): Promise<BartenderStatus>
@@ -433,6 +473,14 @@ export interface ToolboxApi {
     version(): Promise<string>
     check(source: string): Promise<UpdateCheckResult>
     open(url: string): Promise<void>
+  }
+  shortcuts: {
+    status(): Promise<ShortcutStatus>
+    toggle(id: string, enabled: boolean): Promise<ShortcutStatus>
+    add(input: ShortcutInput): Promise<ShortcutStatus>
+    remove(id: string): Promise<ShortcutStatus>
+    rescan(): Promise<ShortcutStatus>
+    open(id: string): Promise<'app' | 'link'>
   }
   platform: string
 }

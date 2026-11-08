@@ -74,7 +74,8 @@ const api: ToolboxApi = {
   markets: {
     status: () => ipcRenderer.invoke('markets:status'),
     refresh: () => ipcRenderer.invoke('markets:refresh'),
-    setWatchlist: (ids) => ipcRenderer.invoke('markets:set-watchlist', ids)
+    setWatchlist: (ids) => ipcRenderer.invoke('markets:set-watchlist', ids),
+    series: (id, days) => ipcRenderer.invoke('markets:series', id, days)
   },
   bartender: {
     status: () => ipcRenderer.invoke('bartender:status'),
@@ -108,6 +109,14 @@ const api: ToolboxApi = {
     version: () => ipcRenderer.invoke('updates:version'),
     check: (source) => ipcRenderer.invoke('updates:check', source),
     open: (url) => ipcRenderer.invoke('updates:open', url)
+  },
+  shortcuts: {
+    status: () => ipcRenderer.invoke('shortcuts:status'),
+    toggle: (id, enabled) => ipcRenderer.invoke('shortcuts:toggle', id, enabled),
+    add: (input) => ipcRenderer.invoke('shortcuts:add', input),
+    remove: (id) => ipcRenderer.invoke('shortcuts:remove', id),
+    rescan: () => ipcRenderer.invoke('shortcuts:rescan'),
+    open: (id) => ipcRenderer.invoke('shortcuts:open', id)
   },
   platform: process.platform
 }

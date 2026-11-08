@@ -1,13 +1,12 @@
 import { net, shell } from 'electron'
-import packageJson from '../../../package.json'
 import type { UpdateCheckResult } from '../../shared/types'
+import { APP_VERSION } from '../version'
 
 const MAX_BYTES = 512 * 1024
 const TIMEOUT_MS = 15000
 const MAX_NOTES = 1500
 const GITHUB_API = 'https://api.github.com'
 const REPO_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}\/[A-Za-z0-9_.-]{1,100}$/
-const APP_VERSION = typeof packageJson.version === 'string' ? packageJson.version : '0.0.0'
 
 interface UpdateSource {
   url: string

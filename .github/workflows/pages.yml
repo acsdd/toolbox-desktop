@@ -2,6 +2,15 @@ name: Website
 
 # Manual on purpose: the site links to the repository, so it should only go
 # live once the repository is public and Pages is enabled for this repo.
+# After the go-public checklist passes, add:
+#   push:
+#     branches: [main]
+#     paths:
+#       - 'website/**'
+#       - 'scripts/check-site-links.cjs'
+#       - 'scripts/inject-site-version.cjs'
+#       - 'package.json'
+#       - '.github/workflows/pages.yml'
 on:
   workflow_dispatch:
 
@@ -22,6 +31,16 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Sync site version from package.json
+        run: node scripts/inject-site-version.cjs
+
+      - name: Check landing page links
+        run: node scripts/check-site-links.cjs website
 
       - uses: actions/configure-pages@v5
 

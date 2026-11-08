@@ -4,12 +4,12 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { XMLParser } from 'fast-xml-parser'
 import type { FeedItem, FeedSource, FeedStatus } from '../../shared/types'
+import { USER_AGENT } from '../version'
 
 const MAX_FEEDS = 8
 const MAX_ITEMS = 24
 const MAX_BYTES = 2 * 1024 * 1024
 const FETCH_TIMEOUT_MS = 12000
-const USER_AGENT = 'Toolbox/0.9.0'
 
 interface StoredFeed {
   id: string

@@ -1,0 +1,36 @@
+name: Stale issues
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stale
+  cancel-in-progress: false
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          days-before-stale: 45
+          days-before-close: 14
+          stale-issue-label: stale
+          exempt-issue-labels: pinned,security,roadmap,publicity-weekly
+          stale-issue-message: >-
+            This issue has had no activity for 45 days, so it is marked as stale.
+            Comment with an update if it is still relevant; otherwise it will close
+            in 14 days. Security and roadmap issues are exempt.
+          close-issue-message: >-
+            Closing as stale after 14 days without activity. Reopen or file a new
+            issue if the problem returns.
+          remove-stale-when-updated: true
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          operations-per-run: 30

@@ -3,12 +3,12 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import type { GitHubSetup, GitHubStatus, GitHubThread } from '../../shared/types'
 import { showDesktopNotification } from './notify'
+import { USER_AGENT } from '../version'
 
 const API_ROOT = 'https://api.github.com'
 const POLL_MS = 3 * 60 * 1000
 const REQUEST_TIMEOUT_MS = 15000
 const MAX_THREADS = 50
-const USER_AGENT = 'Toolbox/0.9.0'
 
 interface StoredGitHub {
   version: 1

@@ -1,10 +1,11 @@
 import { net } from 'electron'
 import type { WeatherCity, WeatherSnapshot } from '../../shared/types'
+import { USER_AGENT } from '../version'
 
 const GEOCODE_URL = 'https://geocoding-api.open-meteo.com/v1/search'
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
 const REQUEST_TIMEOUT_MS = 9000
-const USER_AGENT = 'Toolbox/0.9.0 (Windows desktop app)'
+const WEATHER_AGENT = `${USER_AGENT} (Windows desktop app)`
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object'
@@ -22,7 +23,7 @@ async function getJson(url: URL): Promise<unknown> {
   let response: Response
   try {
     response = await net.fetch(url.toString(), {
-      headers: { Accept: 'application/json', 'User-Agent': USER_AGENT },
+      headers: { Accept: 'application/json', 'User-Agent': WEATHER_AGENT },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
     })
   } catch (cause) {
