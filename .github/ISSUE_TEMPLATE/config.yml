@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Download the latest build
+    url: https://github.com/28121978444/toolbox-desktop/releases/latest
+    about: Installers, portable build and release notes.
+  - name: Read the documentation
+    url: https://github.com/28121978444/toolbox-desktop#readme
+    about: Setup, updates, privacy notes and development commands.

@@ -1,0 +1,61 @@
+name: Bug report
+description: Something in Toolbox is broken or behaves unexpectedly.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not paste API keys, app passwords, tokens or vault contents. Redact anything sensitive.
+  - type: input
+    id: version
+    attributes:
+      label: Toolbox version
+      description: Shown on the App updates page or in the installer filename.
+      placeholder: 0.9.3
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Install type
+      options:
+        - Per-user installer
+        - Portable build
+        - Running from source
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Screenshots or logs
+      description: Optional. Drag images in, or paste redacted log lines.
