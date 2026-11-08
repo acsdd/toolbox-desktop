@@ -41,6 +41,7 @@ function LaunchpadTool() {
   const [formError, setFormError] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
+  const [filter, setFilter] = useState('')
 
   useEffect(() => {
     let alive = true
@@ -70,6 +71,28 @@ function LaunchpadTool() {
     () => enabled.filter((item) => item.installed).length,
     [enabled]
   )
+
+  const matches = useMemo(() => {
+    const query = filter.trim().toLowerCase()
+    if (!query) return null
+    return new Set(
+      items
+        .filter(
+          (item) =>
+            !item.custom &&
+            (item.name.toLowerCase().includes(query) ||
+              item.hint.toLowerCase().includes(query))
+        )
+        .map((item) => item.id)
+    )
+  }, [filter, items])
+
+  const toggleManage = () => {
+    setManage((value) => {
+      if (value) setFilter('')
+      return !value
+    })
+  }
 
   const run = async (task: () => Promise<ShortcutStatus>) => {
     setBusy(true)
@@ -158,8 +181,9 @@ function LaunchpadTool() {
         </div>
         <button
           className={`ghost-button ${manage ? 'active' : ''}`}
-          onClick={() => setManage((value) => !value)}
+          onClick={toggleManage}
           aria-expanded={manage}
+          aria-controls="launchpad-manage"
         >
           <Icon name={manage ? 'check' : 'settings'} size={15} />
           {manage ? 'Done' : 'Choose shortcuts'}
@@ -212,10 +236,10 @@ function LaunchpadTool() {
       )}
 
       {manage && (
-        <div className="launchpad-manage">
+        <div className="launchpad-manage" id="launchpad-manage">
           <div className="launchpad-manage-head">
             <div className="launchpad-manage-copy">
-              <strong>Preset shortcuts</strong>
+              <strong>Shortcuts</strong>
               <span>
                 Turn off what you do not use. A green App badge means the desktop client was found
                 in your Start Menu.
@@ -231,45 +255,28 @@ function LaunchpadTool() {
             </button>
           </div>
 
-          {PRESET_GROUPS.map((group) => {
-            const groupItems = items.filter((item) => item.group === group.id)
-            const on = groupItems.filter((item) => item.enabled).length
-            return (
-              <section className="launchpad-group" key={group.id}>
-                <div className="launchpad-group-head">
-                  <span>{group.title}</span>
-                  <span>
-                    {on}/{groupItems.length} on
-                  </span>
-                </div>
-                <div className="launchpad-rows">
-                  {groupItems.map((item) => (
-                    <div className="launchpad-row" key={item.id}>
-                      <div className="launchpad-row-copy">
-                        <strong>
-                          {item.name}
-                          {item.installed && <span className="launchpad-badge">App</span>}
-                        </strong>
-                        <span>{item.hint}</span>
-                      </div>
-                      <button
-                        role="switch"
-                        aria-checked={item.enabled}
-                        aria-label={`Show ${item.name}`}
-                        className={`switch ${item.enabled ? 'on' : ''}`}
-                        onClick={() => toggle(item)}
-                        disabled={busy}
-                      >
-                        <span className="switch-knob" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )
-          })}
+          <div className="launchpad-search">
+            <Icon name="search" size={14} />
+            <input
+              value={filter}
+              onChange={(event) => setFilter(event.target.value)}
+              placeholder="Filter presets"
+              aria-label="Filter preset shortcuts"
+              spellCheck={false}
+            />
+            {filter && (
+              <button
+                type="button"
+                className="launchpad-search-clear"
+                onClick={() => setFilter('')}
+                aria-label="Clear the preset filter"
+              >
+                <Icon name="close" size={12} />
+              </button>
+            )}
+          </div>
 
-          <section className="launchpad-group">
+          <section className="launchpad-group launchpad-links" data-group="custom">
             <div className="launchpad-group-head">
               <span>Your links</span>
               <span>{custom.length} added</span>
@@ -331,6 +338,54 @@ function LaunchpadTool() {
               stored as plain text in your Toolbox data folder.
             </p>
           </section>
+
+          {PRESET_GROUPS.map((group) => {
+            const groupAll = items.filter((item) => item.group === group.id)
+            const groupItems = matches
+              ? groupAll.filter((item) => matches.has(item.id))
+              : groupAll
+            if (groupItems.length === 0) return null
+            const on = groupAll.filter((item) => item.enabled).length
+            return (
+              <section className="launchpad-group" data-group={group.id} key={group.id}>
+                <div className="launchpad-group-head">
+                  <span>{group.title}</span>
+                  <span>
+                    {on}/{groupAll.length} on
+                  </span>
+                </div>
+                <div className="launchpad-rows">
+                  {groupItems.map((item) => (
+                    <div className="launchpad-row" key={item.id}>
+                      <div className="launchpad-row-copy">
+                        <strong>
+                          {item.name}
+                          {item.installed && <span className="launchpad-badge">App</span>}
+                        </strong>
+                        <span>{item.hint}</span>
+                      </div>
+                      <button
+                        role="switch"
+                        aria-checked={item.enabled}
+                        aria-label={`Show ${item.name}`}
+                        className={`switch ${item.enabled ? 'on' : ''}`}
+                        onClick={() => toggle(item)}
+                        disabled={busy}
+                      >
+                        <span className="switch-knob" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )
+          })}
+
+          {matches && matches.size === 0 && (
+            <p className="hint launchpad-no-match">
+              No presets match “{filter.trim()}”. Clear the filter to see everything.
+            </p>
+          )}
         </div>
       )}
 

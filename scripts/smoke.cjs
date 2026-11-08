@@ -379,6 +379,16 @@ async function main() {
       launchpadCustomRemoved: false,
       launchpadBadUrlRejected: false,
       launchpadOpenUnknownRejected: false,
+      launchpadManage: false,
+      launchpadLinksFirst: false,
+      launchpadFiltered: false,
+      launchpadFilterCase: false,
+      launchpadFilterTrim: false,
+      launchpadFilterHint: false,
+      launchpadFilterEmpty: false,
+      launchpadFilterCustom: false,
+      launchpadFilterKeepsCustom: false,
+      launchpadFilterReset: false,
       launchpadMessage: '',
       artistwaveCard: false,
       artistwaveTool: false,
@@ -689,6 +699,99 @@ async function main() {
     await openCard('AI launchpad')
     result.launchpadTool = Boolean(document.querySelector('.launchpad'))
     result.launchpadTiles = document.querySelectorAll('.launchpad-tile').length
+
+    document.querySelector('.launchpad-strip .ghost-button')?.click()
+    await delay(300)
+    result.launchpadManage = Boolean(document.querySelector('#launchpad-manage'))
+    const launchpadGroups = [...document.querySelectorAll('#launchpad-manage .launchpad-group')]
+    result.launchpadLinksFirst = launchpadGroups[0]?.getAttribute('data-group') === 'custom'
+
+    const filterInput = document.querySelector('.launchpad-search input')
+    if (filterInput) {
+      const setInput = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+      const typeInto = async (node, value) => {
+        setInput?.call(node, value)
+        node.dispatchEvent(new Event('input', { bubbles: true }))
+        await delay(250)
+      }
+      const presetRows = () => [
+        ...document.querySelectorAll(
+          '#launchpad-manage .launchpad-group[data-group]:not([data-group="custom"]) .launchpad-row'
+        )
+      ]
+      const customRows = () => [
+        ...document.querySelectorAll(
+          '#launchpad-manage .launchpad-group[data-group="custom"] .launchpad-row'
+        )
+      ]
+
+      await typeInto(filterInput, 'ollama')
+      const filteredRows = presetRows()
+      result.launchpadFiltered =
+        filteredRows.length === 1 && /Ollama/i.test(filteredRows[0].textContent ?? '')
+
+      await typeInto(filterInput, 'OLLAMA')
+      const caseRows = presetRows()
+      result.launchpadFilterCase =
+        caseRows.length === 1 && /Ollama/i.test(caseRows[0].textContent ?? '')
+
+      await typeInto(filterInput, '  ollama  ')
+      const trimRows = presetRows()
+      result.launchpadFilterTrim =
+        trimRows.length === 1 && /Ollama/i.test(trimRows[0].textContent ?? '')
+
+      await typeInto(filterInput, 'offline chat')
+      const hintRows = presetRows()
+      result.launchpadFilterHint =
+        hintRows.length === 1 && /GPT4All/i.test(hintRows[0].textContent ?? '')
+
+      await typeInto(filterInput, 'zzz-nothing')
+      result.launchpadFilterEmpty =
+        presetRows().length === 0 && Boolean(document.querySelector('.launchpad-no-match'))
+
+      const nameInput = document.querySelector('.launchpad-add input')
+      const urlInput = document.querySelectorAll('.launchpad-add input')[1]
+      if (nameInput && urlInput) {
+        setInput?.call(nameInput, 'Filter check')
+        nameInput.dispatchEvent(new Event('input', { bubbles: true }))
+        setInput?.call(urlInput, 'https://example.com/filter-check')
+        urlInput.dispatchEvent(new Event('input', { bubbles: true }))
+        await delay(120)
+        document.querySelector('.launchpad-add')?.requestSubmit()
+        await delay(450)
+        const addedRow = customRows()[0]
+        result.launchpadFilterCustom =
+          customRows().length === 1 && /Filter check/i.test(addedRow?.textContent ?? '')
+
+        await typeInto(filterInput, 'ollama')
+        const mixedRows = [...document.querySelectorAll('#launchpad-manage .launchpad-row')]
+        result.launchpadFilterKeepsCustom =
+          mixedRows.length === 2 &&
+          customRows().length === 1 &&
+          presetRows().length === 1 &&
+          mixedRows.some((row) => /Filter check/i.test(row.textContent ?? ''))
+      }
+    }
+
+    document.querySelector('.launchpad-strip .ghost-button')?.click()
+    await delay(300)
+
+    document.querySelector('.launchpad-strip .ghost-button')?.click()
+    await delay(300)
+    const resetInput = document.querySelector('.launchpad-search input')
+    const resetRows = [
+      ...document.querySelectorAll(
+        '#launchpad-manage .launchpad-group[data-group]:not([data-group="custom"]) .launchpad-row'
+      )
+    ]
+    result.launchpadFilterReset =
+      Boolean(resetInput) && resetInput.value === '' && resetRows.length > 20
+    document
+      .querySelector('#launchpad-manage .launchpad-group[data-group="custom"] .launchpad-remove')
+      ?.click()
+    await delay(400)
+    document.querySelector('.launchpad-strip .ghost-button')?.click()
+    await delay(250)
 
     try {
       result.launchpadStatus = await window.api.shortcuts.status()
@@ -1473,6 +1576,22 @@ async function main() {
   expect(pagesUi.launchpadCard, 'AI launchpad card is missing from the workspace page')
   expect(pagesUi.launchpadTool, 'AI launchpad did not open')
   expect(pagesUi.launchpadTiles === 10, `AI launchpad shows ${pagesUi.launchpadTiles} tiles, expected 10`)
+  expect(pagesUi.launchpadManage, 'AI launchpad settings did not open')
+  expect(pagesUi.launchpadLinksFirst, 'custom links are not shown before the preset list')
+  expect(pagesUi.launchpadFiltered, 'AI launchpad preset filter did not narrow the list')
+  expect(pagesUi.launchpadFilterCase, 'AI launchpad preset filter is not case-insensitive')
+  expect(pagesUi.launchpadFilterTrim, 'AI launchpad preset filter does not trim whitespace')
+  expect(pagesUi.launchpadFilterHint, 'AI launchpad preset filter does not match hint text')
+  expect(pagesUi.launchpadFilterEmpty, 'AI launchpad filter did not show an empty result')
+  expect(pagesUi.launchpadFilterCustom, 'AI launchpad custom link could not be added while filtering')
+  expect(
+    pagesUi.launchpadFilterKeepsCustom,
+    'AI launchpad preset filter hides custom links'
+  )
+  expect(
+    pagesUi.launchpadFilterReset,
+    'AI launchpad filter is not cleared when the panel is closed'
+  )
   expect(
     pagesUi.launchpadCatalog >= 25,
     `AI launchpad catalog has only ${pagesUi.launchpadCatalog} entries`

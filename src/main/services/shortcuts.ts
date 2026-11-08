@@ -345,7 +345,7 @@ async function scanApps(): Promise<Map<string, string>> {
 
   const byName = new Map<string, string>()
   for (const link of found) {
-    const name = normalize(basename(link, '.lnk'))
+    const name = normalize(basename(link).replace(/\.lnk$/i, ''))
     if (name && !byName.has(name)) byName.set(name, link)
   }
 

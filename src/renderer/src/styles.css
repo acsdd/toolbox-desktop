@@ -3774,6 +3774,60 @@ code {
   line-height: 1.5;
 }
 
+.launchpad-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--muted-2);
+}
+
+.launchpad-search:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.launchpad-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 12.5px;
+  outline: none;
+}
+
+.launchpad-search-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-2);
+  cursor: pointer;
+}
+
+.launchpad-search-clear:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.launchpad-links {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.launchpad-no-match {
+  padding: 6px 2px;
+}
+
 .launchpad-group {
   display: flex;
   flex-direction: column;
