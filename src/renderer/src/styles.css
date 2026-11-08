@@ -3704,6 +3704,23 @@ code {
   overflow: hidden;
 }
 
+/* ArtistWave's own mini-player button narrows the app window instead of
+   opening a browser popup. Hide the Toolbox chrome so the site's compact
+   player fills the whole window. */
+.app-player-mini .topbar,
+.app-player-mini .player-bar {
+  display: none;
+}
+
+.app-player-mini .content {
+  padding: 0;
+  scrollbar-gutter: auto;
+}
+
+.app-player-mini .player-page {
+  background: #0b1a1a;
+}
+
 .player-button {
   display: inline-flex;
   align-items: center;

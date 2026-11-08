@@ -1,0 +1,1068 @@
+{
+  "generatedAt": "2026-11-08",
+  "products": [
+    {
+      "id": "toolbox",
+      "name": "Toolbox",
+      "platform": "Windows desktop (Electron)",
+      "distribution": "GitHub Releases, NSIS per-user installer, portable EXE",
+      "license": "MIT",
+      "notes": "No account, no cloud, no telemetry. Unsigned installers trigger SmartScreen."
+    },
+    {
+      "id": "bartender-aid",
+      "name": "Bartender Aid",
+      "platform": "React Native mobile + Node/Express API",
+      "distribution": "Google Play and App Store (planned), Render backend",
+      "license": "Not specified in this assessment",
+      "notes": "API has three endpoints, no OpenAPI, no auth, wildcard CORS."
+    }
+  ],
+  "scoring": {
+    "scale": "1-5",
+    "mapping": {
+      "5": "85-100 on the 48-check framework, agent-ready, formal schema and complete docs",
+      "4": "70-84, agent-ready with one or two caveats",
+      "3": "50-69, needs work, API exists but incomplete or paid-gated",
+      "2": "30-49, not ready, no public API or only brittle browser automation",
+      "1": "0-29, manual only, no practical automation path"
+    },
+    "note": "Readiness measures agent/API operability, not product quality. A manual directory can score 2 and still be worth submitting."
+  },
+  "categories": [
+    {
+      "id": "hosting",
+      "name": "Static hosting",
+      "vendors": [
+        {
+          "id": "github-pages",
+          "name": "GitHub Pages",
+          "api": "Git push or GitHub Actions; REST Pages API",
+          "auth": "GitHub token or SSH",
+          "freeTier": "Free for public repositories on GitHub Free",
+          "limits": "1 GB site; 100 GB/month bandwidth soft limit; 10 builds/hour soft limit; HTTPS custom domains",
+          "readiness": 4,
+          "effortHours": "1-2",
+          "cost": "$0",
+          "lockIn": "Low; static files stay in the repository",
+          "gdpr": "GitHub/Microsoft DPA; access logs; static hosting only",
+          "verdict": "adopt",
+          "reason": "Repo-native, free, sufficient bandwidth, custom domain and HTTPS supported",
+          "sources": [
+            "https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits",
+            "https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "cloudflare-pages",
+          "name": "Cloudflare Pages",
+          "api": "REST API; Wrangler CLI; Git integration",
+          "auth": "Cloudflare API token",
+          "freeTier": "Free plan",
+          "limits": "500 builds/month; 20 concurrent builds; 20,000 files per deployment; unlimited bandwidth and requests; Workers static assets is the recommended path for new projects",
+          "readiness": 4,
+          "effortHours": "3-4",
+          "cost": "$0; Workers Paid from $5/month",
+          "lockIn": "Low; static output and standard DNS",
+          "gdpr": "Cloudflare DPA; EU options; free Web Analytics",
+          "verdict": "optional",
+          "reason": "Good scale/edge option; more setup than GitHub Pages",
+          "sources": [
+            "https://developers.cloudflare.com/pages/platform/limits/",
+            "https://developers.cloudflare.com/workers/static-assets/"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "netlify",
+          "name": "Netlify",
+          "api": "REST deploy API; CLI; OAuth/PAT",
+          "auth": "OAuth or personal access token",
+          "freeTier": "Free plan with 300 credits/month",
+          "limits": "300 credits/month; bandwidth 20 credits/GB (about 15 GB if all credits go to bandwidth); builds consume credits; legacy 100 GB/300 min figures are not current",
+          "readiness": 5,
+          "effortHours": "2",
+          "cost": "$0; Personal from $9/month",
+          "lockIn": "Medium; build config and functions",
+          "gdpr": "Netlify DPA; US/EU options",
+          "verdict": "optional",
+          "reason": "Excellent API and previews, but the credit model is less predictable",
+          "sources": [
+            "https://www.netlify.com/pricing/"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "vercel",
+          "name": "Vercel",
+          "api": "REST API; CLI",
+          "auth": "Bearer token",
+          "freeTier": "Hobby plan",
+          "limits": "100 GB fast data transfer; 10 GB fast origin transfer; 1M CDN requests; 4 CPU-hours; personal, non-commercial use only",
+          "readiness": 5,
+          "effortHours": "2",
+          "cost": "$0 Hobby; Pro from $20/user/month",
+          "lockIn": "Medium to high if Next.js features are used",
+          "gdpr": "Vercel DPA; US/EU regions",
+          "verdict": "reject",
+          "reason": "Hobby is non-commercial and the project does not need a Next.js runtime",
+          "sources": [
+            "https://vercel.com/docs/plans/hobby",
+            "https://vercel.com/pricing"
+          ],
+          "unverified": false
+        }
+      ]
+    },
+    {
+      "id": "analytics",
+      "name": "Privacy analytics",
+      "vendors": [
+        {
+          "id": "goatcounter",
+          "name": "GoatCounter",
+          "api": "REST /api/v0; published OpenAPI 2.0 contract",
+          "auth": "Per-site bearer API key",
+          "freeTier": "Hosted free for reasonable public usage",
+          "limits": "No published hard cap; about 100k pageviews/month is commonly cited but unverified; self-host unlimited",
+          "readiness": 4,
+          "effortHours": "1",
+          "cost": "$0 hosted; server cost if self-hosted",
+          "lockIn": "Low; data export and self-host escape",
+          "gdpr": "Cookie-free; no personal data; check hosted DPA",
+          "verdict": "adopt",
+          "reason": "Best zero-cost combination of API, UTM/referrer reporting, and cookie-free tracking",
+          "sources": [
+            "https://www.goatcounter.com/",
+            "https://goatcounter.com/help/api"
+          ],
+          "unverified": true
+        },
+        {
+          "id": "umami-cloud",
+          "name": "Umami Cloud",
+          "api": "REST API v2",
+          "auth": "API key on paid plans",
+          "freeTier": "Hobby",
+          "limits": "1 website; 100k events/month; API not included on Hobby; Pro $20/month includes API",
+          "readiness": 3,
+          "effortHours": "1-2",
+          "cost": "$0 Hobby; $20/month Pro",
+          "lockIn": "Low to medium; export and self-host escape",
+          "gdpr": "Cookie-free; verify DPA and data region on the paid plan",
+          "verdict": "optional",
+          "reason": "API is paid and the free tier is limited to one website",
+          "sources": [
+            "https://umami.is/pricing",
+            "https://docs.umami.is/docs/api"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "umami-self-host",
+          "name": "Umami self-host",
+          "api": "REST API v2; API keys in v3.4+",
+          "auth": "API key or username/password",
+          "freeTier": "Open source, MIT",
+          "limits": "Unlimited events and websites; server and Postgres cost only",
+          "readiness": 4,
+          "effortHours": "3-4",
+          "cost": "Server from about $5/month",
+          "lockIn": "Low; full ownership",
+          "gdpr": "Full control; you are the processor; EU hosting possible",
+          "verdict": "optional",
+          "reason": "Best ownership option; requires server maintenance",
+          "sources": [
+            "https://github.com/umami-software/umami",
+            "https://docs.umami.is/docs/api"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "plausible",
+          "name": "Plausible",
+          "api": "Stats API and Sites API",
+          "auth": "Bearer API key",
+          "freeTier": "No free tier; 30-day trial",
+          "limits": "Starter $9/month for 10k pageviews",
+          "readiness": 5,
+          "effortHours": "1",
+          "cost": "$9/month",
+          "lockIn": "Low; data export",
+          "gdpr": "Cookie-free; EU-based; strong GDPR posture",
+          "verdict": "optional",
+          "reason": "Best paid analytics, but not part of the zero-cost stack",
+          "sources": [
+            "https://plausible.io/docs/subscription-plans",
+            "https://plausible.io/docs/stats-api"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "cloudflare-web-analytics",
+          "name": "Cloudflare Web Analytics",
+          "api": "GraphQL Analytics API",
+          "auth": "Cloudflare API token",
+          "freeTier": "Free",
+          "limits": "No published pageview cap; limited event and UTM model",
+          "readiness": 3,
+          "effortHours": "0.5",
+          "cost": "$0",
+          "lockIn": "Low to medium; limited export",
+          "gdpr": "Cookie-free; Cloudflare DPA; no cross-site tracking",
+          "verdict": "adopt-secondary",
+          "reason": "Free independent traffic check; not a full product analytics tool",
+          "sources": [
+            "https://www.cloudflare.com/web-analytics/",
+            "https://developers.cloudflare.com/analytics/graphql-api/"
+          ],
+          "unverified": false
+        }
+      ]
+    },
+    {
+      "id": "newsletter",
+      "name": "Newsletter",
+      "vendors": [
+        {
+          "id": "buttondown",
+          "name": "Buttondown",
+          "api": "REST API",
+          "auth": "API key",
+          "freeTier": "Free up to 100 subscribers",
+          "limits": "Free up to 100 subscribers; custom-domain sending included; pricing assumes at most one email/day to the full list; free-plan API access is not stated on the pricing page",
+          "readiness": 4,
+          "effortHours": "1-2",
+          "cost": "$0 to 100 subscribers; $9/month to 1,000",
+          "lockIn": "Low; subscriber export",
+          "gdpr": "US processor; consent, double opt-in, and DPA required",
+          "verdict": "adopt",
+          "reason": "Best launch fit for a developer audience; verify free-plan API access",
+          "sources": [
+            "https://buttondown.com/pricing",
+            "https://docs.buttondown.com/api-introduction"
+          ],
+          "unverified": true
+        },
+        {
+          "id": "mailerlite",
+          "name": "MailerLite",
+          "api": "REST API v2",
+          "auth": "API token",
+          "freeTier": "Free plan",
+          "limits": "250 subscribers; 2,500 emails/month; 2 seats; paid plans from about $10/month",
+          "readiness": 4,
+          "effortHours": "2",
+          "cost": "$0; paid from about $10/month",
+          "lockIn": "Medium; automations and forms",
+          "gdpr": "EU-based (Lithuania); strong GDPR fit; DPA",
+          "verdict": "optional",
+          "reason": "Best EU/GDPR option, but the free tier was reduced",
+          "sources": [
+            "https://www.mailerlite.com/free-plan",
+            "https://www.mailerlite.com/pricing",
+            "https://developers.mailerlite.com/docs"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "kit",
+          "name": "Kit (ConvertKit)",
+          "api": "REST API v4",
+          "auth": "API key",
+          "freeTier": "Free up to 10,000 subscribers",
+          "limits": "10,000 subscribers; unlimited email sends; 1 user; no visual automations or sequences on Free; API available on Free",
+          "readiness": 4,
+          "effortHours": "2",
+          "cost": "$0; Creator from $39/month",
+          "lockIn": "Medium; forms and landing pages",
+          "gdpr": "US processor; DPA/SCCs; consent required",
+          "verdict": "optional",
+          "reason": "Best free scale, but no automation on Free",
+          "sources": [
+            "https://kit.com/pricing",
+            "https://developers.kit.com/v4"
+          ],
+          "unverified": false
+        }
+      ]
+    },
+    {
+      "id": "social",
+      "name": "Social scheduling",
+      "vendors": [
+        {
+          "id": "buffer",
+          "name": "Buffer",
+          "api": "REST API, generally available",
+          "auth": "Personal API key or OAuth app client",
+          "freeTier": "Free plan",
+          "limits": "3 channels; 10 scheduled posts per channel at a time; 1 API key; 150 requests/15 min; 600/day; 1,000/channel up to 3,000/30 days",
+          "readiness": 4,
+          "effortHours": "1-2",
+          "cost": "$0; paid from about $5-6/channel/month",
+          "lockIn": "Low; post history",
+          "gdpr": "US processor; DPA; social platform data",
+          "verdict": "adopt",
+          "reason": "API available on Free with published limits",
+          "sources": [
+            "https://buffer.com/api",
+            "https://developers.buffer.com/",
+            "https://buffer.com/pricing"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "publer",
+          "name": "Publer",
+          "api": "REST API",
+          "auth": "API key",
+          "freeTier": "Free plan",
+          "limits": "3 social accounts; 10 scheduled posts/account; 25 drafts; API reportedly gated to Business (~$21/month)",
+          "readiness": 3,
+          "effortHours": "2",
+          "cost": "$0; Business about $21/month for API",
+          "lockIn": "Medium; workspace data",
+          "gdpr": "Check DPA and data region",
+          "verdict": "reject",
+          "reason": "API paywall breaks the zero-cost constraint; verify plan gating",
+          "sources": [
+            "https://publer.com/plans",
+            "https://publer.com/docs"
+          ],
+          "unverified": true
+        },
+        {
+          "id": "postiz",
+          "name": "Postiz",
+          "api": "REST API",
+          "auth": "API key; self-host auth",
+          "freeTier": "Self-host free (AGPL-3.0)",
+          "limits": "No channel limits when self-hosted; hosted from $29/month",
+          "readiness": 4,
+          "effortHours": "4-6",
+          "cost": "Server cost; hosted $29/month",
+          "lockIn": "Low; full ownership when self-hosted",
+          "gdpr": "Full control; you are the processor",
+          "verdict": "optional",
+          "reason": "Self-host option if server maintenance is acceptable",
+          "sources": [
+            "https://postiz.com/pricing",
+            "https://github.com/gitroomhq/postiz-app",
+            "https://docs.postiz.com/"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "later",
+          "name": "Later",
+          "api": "No documented public API",
+          "auth": "Not applicable",
+          "freeTier": "Limited free plan",
+          "limits": "Free plan heavily capped (1 social set; roughly 5-12 posts/month depending on source)",
+          "readiness": 2,
+          "effortHours": "0",
+          "cost": "Paid plans for volume",
+          "lockIn": "High; no automation/export path",
+          "gdpr": "US processor; DPA; platform data",
+          "verdict": "reject",
+          "reason": "No public API and a capped free plan",
+          "sources": [
+            "https://www.outstand.so/blog/later-alternatives"
+          ],
+          "unverified": true
+        }
+      ]
+    },
+    {
+      "id": "launch",
+      "name": "Launch and directories",
+      "vendors": [
+        {
+          "id": "product-hunt",
+          "name": "Product Hunt",
+          "api": "GraphQL API; OAuth user flow, client-only token, PKCE, or developer token",
+          "auth": "OAuth or developer token",
+          "freeTier": "Free to launch",
+          "limits": "6,250 complexity points/15 min; launch is manual; 12:01 AM PT; can schedule up to 1 month ahead; write access is partial and use-case gated",
+          "readiness": 3,
+          "effortHours": "3-4 plus launch day",
+          "cost": "$0",
+          "lockIn": "None; public listing",
+          "gdpr": "US platform; public data; account DPA",
+          "verdict": "adopt",
+          "reason": "Best launch channel; API is read-mostly and does not replace the manual flow",
+          "sources": [
+            "https://www.producthunt.com/launch",
+            "https://www.producthunt.com/launch/preparing-for-launch",
+            "https://api.producthunt.com/v2/docs",
+            "https://api.producthunt.com/v2/docs/rate_limits/headers"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "alternativeto",
+          "name": "AlternativeTo",
+          "api": "No public API",
+          "auth": "Web account",
+          "freeTier": "Free submission",
+          "limits": "Moderation; requires app details and alternatives",
+          "readiness": 2,
+          "effortHours": "1",
+          "cost": "$0",
+          "lockIn": "None; public listing",
+          "gdpr": "Public data",
+          "verdict": "adopt",
+          "reason": "Free long-tail discovery; manual only",
+          "sources": [
+            "https://alternativeto.net/faq/"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "softpedia",
+          "name": "Softpedia",
+          "api": "No public API",
+          "auth": "Web form",
+          "freeTier": "Free submission",
+          "limits": "Review typically about 14 days (third-party estimate)",
+          "readiness": 2,
+          "effortHours": "1 plus wait",
+          "cost": "$0",
+          "lockIn": "None; public listing",
+          "gdpr": "Public data",
+          "verdict": "adopt",
+          "reason": "Free listing and backlink; submit early",
+          "sources": [
+            "https://win.softpedia.com/contact_submit.shtml",
+            "https://www.softpedia.com/user/terms.shtml"
+          ],
+          "unverified": true
+        },
+        {
+          "id": "fosshub",
+          "name": "FossHub",
+          "api": "No public API",
+          "auth": "Contact form",
+          "freeTier": "Free",
+          "limits": "Curated; acceptance not guaranteed; may host binaries",
+          "readiness": 2,
+          "effortHours": "1 plus review",
+          "cost": "$0",
+          "lockIn": "Medium if they host binaries",
+          "gdpr": "Public data; US-hosted",
+          "verdict": "optional",
+          "reason": "Good FOSS credibility, but selective and manual",
+          "sources": [
+            "https://www.fosshub.com/signup.html"
+          ],
+          "unverified": false
+        }
+      ]
+    },
+    {
+      "id": "windows",
+      "name": "Windows distribution",
+      "vendors": [
+        {
+          "id": "winget-pkgs",
+          "name": "winget-pkgs",
+          "api": "GitHub PR/API; wingetcreate",
+          "auth": "GitHub token",
+          "freeTier": "Free",
+          "limits": "Manifest with installer URL and SHA256; automated validation; unsigned installers accepted but SmartScreen remains",
+          "readiness": 5,
+          "effortHours": "2-4 first package; about 0.5 per release",
+          "cost": "$0",
+          "lockIn": "None; public manifest",
+          "gdpr": "No user data",
+          "verdict": "adopt",
+          "reason": "Schema-driven and automatable; highest-leverage Windows channel",
+          "sources": [
+            "https://learn.microsoft.com/en-us/windows/package-manager/package/repository",
+            "https://github.com/microsoft/winget-create"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "chocolatey",
+          "name": "Chocolatey Community Repository",
+          "api": "NuGet push API",
+          "auth": "NuGet API key",
+          "freeTier": "Free community repository",
+          "limits": "Human moderation plus virus scan; checksum required; silent install required; no listing fee",
+          "readiness": 4,
+          "effortHours": "3-5 first package; about 1 per release",
+          "cost": "$0",
+          "lockIn": "None; community package",
+          "gdpr": "No user data",
+          "verdict": "adopt",
+          "reason": "Free and trusted; moderation adds latency",
+          "sources": [
+            "https://docs.chocolatey.org/en-us/community-repository/moderation/",
+            "https://docs.chocolatey.org/en-us/create/create-packages/"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "microsoft-store-msix",
+          "name": "Microsoft Store (MSIX)",
+          "api": "Store submission API; Developer CLI; Partner Center",
+          "auth": "Microsoft Entra / Partner Center",
+          "freeTier": "Free individual and company registration in 2026",
+          "limits": "MSIX packaging and certification required; Store-managed code signing at no cost",
+          "readiness": 4,
+          "effortHours": "8-16 first submission",
+          "cost": "$0 registration and signing",
+          "lockIn": "Medium; Store policies, certification, package identity",
+          "gdpr": "Microsoft DPA; Store privacy policy required",
+          "verdict": "strategic",
+          "reason": "Free Store signing is the cleanest SmartScreen fix; packaging effort is the cost",
+          "sources": [
+            "https://learn.microsoft.com/en-us/windows/apps/publish/whats-new-individual-developer",
+            "https://blogs.windows.com/windowsdeveloper/2026/05/07/publish-to-microsoft-store-as-a-company-now-with-free-registration-and-faster-onboarding/",
+            "https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/code-signing-options",
+            "https://learn.microsoft.com/en-us/windows/apps/publish/store-submission-api"
+          ],
+          "unverified": false
+        }
+      ]
+    },
+    {
+      "id": "mobile",
+      "name": "Mobile distribution",
+      "vendors": [
+        {
+          "id": "google-play",
+          "name": "Google Play",
+          "api": "Play Developer API",
+          "auth": "Google service account",
+          "freeTier": "No free tier",
+          "limits": "$25 one-time registration; internal testing up to 100 testers; new personal accounts need 12 testers for 14 continuous days of closed testing before production; developer verification",
+          "readiness": 4,
+          "effortHours": "4-8",
+          "cost": "$25 one-time",
+          "lockIn": "Medium; Play policies, data safety form, review",
+          "gdpr": "Google DPA; Data safety form; privacy policy",
+          "verdict": "adopt",
+          "reason": "Fastest mobile path; plan for the 14-day production gate",
+          "sources": [
+            "https://support.google.com/googleplay/android-developer/answer/14151465?hl=en",
+            "https://support.google.com/googleplay/android-developer/answer/9845334?hl=en",
+            "https://support.google.com/googleplay/android-developer/answer/6112435?hl=en",
+            "https://primetestlab.com/blog/google-play-changed-20-to-12-testers"
+          ],
+          "unverified": true
+        },
+        {
+          "id": "app-store",
+          "name": "Apple App Store",
+          "api": "App Store Connect API",
+          "auth": "JWT",
+          "freeTier": "No free tier",
+          "limits": "$99/year; TestFlight up to 10,000 external testers; App Review required",
+          "readiness": 4,
+          "effortHours": "8-16",
+          "cost": "$99/year",
+          "lockIn": "Medium to high; App Review, privacy labels, platform fees",
+          "gdpr": "Apple DPA; privacy nutrition labels; ATT if tracking",
+          "verdict": "optional",
+          "reason": "Defer until Android retention proves the port is worth it",
+          "sources": [
+            "https://developer.apple.com/programs/",
+            "https://developer.apple.com/programs/whats-included/",
+            "https://developer.apple.com/documentation/appstoreconnectapi"
+          ],
+          "unverified": false
+        }
+      ]
+    },
+    {
+      "id": "feedback",
+      "name": "Feedback and crash reporting",
+      "vendors": [
+        {
+          "id": "github-issues",
+          "name": "GitHub Issues",
+          "api": "REST and GraphQL",
+          "auth": "PAT or GitHub App",
+          "freeTier": "Free for public repositories",
+          "limits": "5,000 authenticated REST requests/hour; issue templates already in the repo",
+          "readiness": 5,
+          "effortHours": "0.5",
+          "cost": "$0",
+          "lockIn": "Low to medium; data in GitHub",
+          "gdpr": "GitHub DPA; public issue content",
+          "verdict": "adopt",
+          "reason": "Free, API-first, and already where the code lives",
+          "sources": [
+            "https://docs.github.com/en/rest/issues/issues"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "sentry",
+          "name": "Sentry",
+          "api": "DSN ingest; REST API for management",
+          "auth": "DSN for events; API token for management",
+          "freeTier": "Developer plan",
+          "limits": "5,000 errors/month; 1 user; 50 replays; 5 GB logs",
+          "readiness": 4,
+          "effortHours": "2-4",
+          "cost": "$0; Team from $26/month",
+          "lockIn": "Medium; self-host option and event export",
+          "gdpr": "US processor; DPA; PII scrubbing; opt-in required",
+          "verdict": "bartender-aid-only",
+          "reason": "Useful for Bartender Aid; default Sentry would break Toolbox's no-telemetry promise",
+          "sources": [
+            "https://sentry.io/pricing/",
+            "https://docs.sentry.io/api/",
+            "https://docs.sentry.io/platforms/javascript/guides/electron/data-management/data-collected/"
+          ],
+          "unverified": false
+        }
+      ]
+    },
+    {
+      "id": "short-links",
+      "name": "Short links and UTM",
+      "vendors": [
+        {
+          "id": "dub",
+          "name": "Dub.co",
+          "api": "REST API",
+          "auth": "API key",
+          "freeTier": "Free tier reported by third parties",
+          "limits": "Reported 25 new links/month, 1,000 tracked events/month, 30-day retention; not visible on the current pricing page; Pro about $30/month; self-host AGPL-3.0",
+          "readiness": 4,
+          "effortHours": "1",
+          "cost": "$0 reported; about $30/month Pro",
+          "lockIn": "Low to medium; self-host escape",
+          "gdpr": "US processor; click data; DPA; self-host for control",
+          "verdict": "optional",
+          "reason": "Useful for social bios; verify the free tier before relying on it",
+          "sources": [
+            "https://dub.co/pricing",
+            "https://dub.co/docs/api-reference/introduction",
+            "https://github.com/dubinc/dub"
+          ],
+          "unverified": true
+        },
+        {
+          "id": "cloudflare-worker-short-links",
+          "name": "Cloudflare Worker short links",
+          "api": "Cloudflare API; Wrangler; custom code",
+          "auth": "Cloudflare API token",
+          "freeTier": "Workers free plan",
+          "limits": "100,000 requests/day; KV/D1 free quotas apply",
+          "readiness": 3,
+          "effortHours": "2-3",
+          "cost": "$0",
+          "lockIn": "Low; you own the code and data",
+          "gdpr": "Full control; you define retention",
+          "verdict": "optional",
+          "reason": "Self-hosted redirects without a vendor",
+          "sources": [
+            "https://developers.cloudflare.com/workers/"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "direct-utm",
+          "name": "Direct UTM links",
+          "api": "None",
+          "auth": "None",
+          "freeTier": "Free",
+          "limits": "No vendor limits",
+          "readiness": 5,
+          "effortHours": "0.5",
+          "cost": "$0",
+          "lockIn": "None",
+          "gdpr": "No third-party click tracking",
+          "verdict": "adopt",
+          "reason": "Enough for launch and avoids another privacy surface",
+          "sources": [
+            "https://goatcounter.com/help/api"
+          ],
+          "unverified": false
+        }
+      ]
+    },
+    {
+      "id": "email",
+      "name": "Email sending",
+      "vendors": [
+        {
+          "id": "resend",
+          "name": "Resend",
+          "api": "REST API",
+          "auth": "API key",
+          "freeTier": "Free plan",
+          "limits": "3,000 emails/month; 100/day; 3 domains; 30-day retention",
+          "readiness": 5,
+          "effortHours": "1-2",
+          "cost": "$0; Pro $20/month",
+          "lockIn": "Low to medium; logs and domain setup are portable",
+          "gdpr": "US processor; DPA; transactional data; SPF/DKIM required",
+          "verdict": "adopt",
+          "reason": "Best transactional API; not a newsletter platform",
+          "sources": [
+            "https://resend.com/pricing",
+            "https://resend.com/docs/api-reference"
+          ],
+          "unverified": false
+        }
+      ]
+    },
+    {
+      "id": "automation",
+      "name": "Automation",
+      "vendors": [
+        {
+          "id": "n8n",
+          "name": "n8n self-host",
+          "api": "REST API; webhooks",
+          "auth": "API key",
+          "freeTier": "Free self-host under the Sustainable Use License",
+          "limits": "Fair-code licence; server and maintenance cost only",
+          "readiness": 4,
+          "effortHours": "4-6",
+          "cost": "Server cost",
+          "lockIn": "Low; full ownership",
+          "gdpr": "Full control; you are the processor",
+          "verdict": "optional",
+          "reason": "Overkill while GitHub Actions covers scheduled work",
+          "sources": [
+            "https://docs.n8n.io/n8n-community-license",
+            "https://docs.n8n.io/api/"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "apify",
+          "name": "Apify",
+          "api": "REST API",
+          "auth": "API token",
+          "freeTier": "Free plan with $5 monthly usage credit",
+          "limits": "$5/month usage; $0.20/compute unit; Starter $19/month",
+          "readiness": 4,
+          "effortHours": "1-2",
+          "cost": "$0 with $5 credit; Starter $19/month",
+          "lockIn": "Low to medium; run data export",
+          "gdpr": "US processor; DPA; scraping compliance is the user's responsibility",
+          "verdict": "optional",
+          "reason": "Useful for a bounded one-off scrape; not a launch dependency",
+          "sources": [
+            "https://apify.com/pricing",
+            "https://docs.apify.com/api/v2"
+          ],
+          "unverified": false
+        }
+      ]
+    },
+    {
+      "id": "uptime",
+      "name": "Uptime and status monitoring",
+      "vendors": [
+        {
+          "id": "uptimerobot",
+          "name": "UptimeRobot",
+          "api": "REST API v2",
+          "auth": "API key",
+          "freeTier": "Free plan",
+          "limits": "50 monitors; 5-minute checks; 1 status page; API included",
+          "readiness": 4,
+          "effortHours": "0.5",
+          "cost": "$0; Solo $7/month",
+          "lockIn": "Low; monitor config export",
+          "gdpr": "US processor; minimal data; check commercial terms",
+          "verdict": "optional",
+          "reason": "Good secondary monitor; slower checks than Better Stack",
+          "sources": [
+            "https://help.uptimerobot.com/en/articles/11604710-who-should-use-uptimerobot-s-free-plan",
+            "https://uptimerobot.com/api/"
+          ],
+          "unverified": true
+        },
+        {
+          "id": "better-stack",
+          "name": "Better Stack",
+          "api": "REST API",
+          "auth": "API token",
+          "freeTier": "Free plan",
+          "limits": "10 monitors; 10 heartbeats; 3-minute checks; status page; API included",
+          "readiness": 4,
+          "effortHours": "0.5",
+          "cost": "$0; Team $25/month",
+          "lockIn": "Low to medium; status page branding",
+          "gdpr": "Verify DPA and data region; monitors hold minimal data",
+          "verdict": "adopt",
+          "reason": "Best free primary monitor with a status page and API",
+          "sources": [
+            "https://betterstack.com/uptime",
+            "https://betterstack.com/docs/uptime/api/"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "uptime-kuma",
+          "name": "Uptime Kuma",
+          "api": "Self-host; Socket.io and Prometheus metrics; limited REST",
+          "auth": "Self-host auth; API keys for Prometheus",
+          "freeTier": "Open source, MIT",
+          "limits": "You run the server; status page included; no full official REST API",
+          "readiness": 3,
+          "effortHours": "2-3",
+          "cost": "Server cost",
+          "lockIn": "Low; full ownership",
+          "gdpr": "Full control; EU hosting possible",
+          "verdict": "optional",
+          "reason": "Capable self-host option, but limited API and more maintenance",
+          "sources": [
+            "https://github.com/louislam/uptime-kuma",
+            "https://github.com/louislam/uptime-kuma/wiki/API-Documentation"
+          ],
+          "unverified": false
+        }
+      ]
+    },
+    {
+      "id": "adjacent",
+      "name": "Adjacent vendors already in the stack",
+      "vendors": [
+        {
+          "id": "render",
+          "name": "Render",
+          "api": "REST API",
+          "auth": "API key",
+          "freeTier": "Free web service",
+          "limits": "Free web service sleeps after 15 minutes idle; Starter $7/month (0.5 CPU, 512 MB); health check path already configured",
+          "readiness": 4,
+          "effortHours": "0 (already in use)",
+          "cost": "$0 free; Starter $7/month",
+          "lockIn": "Low to medium; standard Node app",
+          "gdpr": "US/EU regions; DPA",
+          "verdict": "keep-free-then-upgrade",
+          "reason": "Cold starts hurt mobile UX; upgrade before public launch",
+          "sources": [
+            "https://render.com/docs/free",
+            "https://render.com/pricing"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "neon",
+          "name": "Neon",
+          "api": "REST API",
+          "auth": "API key",
+          "freeTier": "Free plan",
+          "limits": "100 projects; 1 GB storage/project; 100 CU-hours/month",
+          "readiness": 5,
+          "effortHours": "0 (already in use)",
+          "cost": "$0; usage-based paid plans",
+          "lockIn": "Low; standard Postgres",
+          "gdpr": "Region-selectable with EU options; DPA available",
+          "verdict": "adopt",
+          "reason": "Free tier is sufficient for early Bartender Aid usage",
+          "sources": [
+            "https://neon.com/pricing",
+            "https://neon.com/docs/introduction/plans"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "github",
+          "name": "GitHub",
+          "api": "REST and GraphQL",
+          "auth": "PAT or GitHub App",
+          "freeTier": "Free public repositories",
+          "limits": "Actions free for standard runners on public repositories; Releases API stable",
+          "readiness": 5,
+          "effortHours": "0 (already in use)",
+          "cost": "$0",
+          "lockIn": "Low to medium",
+          "gdpr": "GitHub DPA",
+          "verdict": "adopt",
+          "reason": "Source, releases, issues, and automation in one place",
+          "sources": [
+            "https://docs.github.com/billing/managing-billing-for-github-actions/about-billing-for-github-actions",
+            "https://docs.github.com/en/rest/releases/releases"
+          ],
+          "unverified": false
+        },
+        {
+          "id": "cloudflare-dns-registrar",
+          "name": "Cloudflare DNS and Registrar",
+          "api": "REST API",
+          "auth": "API token",
+          "freeTier": "Free DNS; at-cost domains",
+          "limits": "Domain about $10-15/year for .com (verify at checkout); Web Analytics free",
+          "readiness": 5,
+          "effortHours": "0.5",
+          "cost": "$0 DNS; domain annual",
+          "lockIn": "Low; standard DNS",
+          "gdpr": "Cloudflare DPA; EU options",
+          "verdict": "adopt",
+          "reason": "Cheapest domain path and free DNS/analytics",
+          "sources": [
+            "https://www.cloudflare.com/domains/"
+          ],
+          "unverified": true
+        }
+      ]
+    }
+  ],
+  "recommendedStacks": {
+    "zeroCost": {
+      "recurringCostUsd": 0,
+      "oneTimeCosts": [
+        "Google Play registration: $25 (only if shipping Android beyond local testing)",
+        "Domain: about $10-15/year (optional)",
+        "Apple Developer Program: $99/year (only if shipping iOS)"
+      ],
+      "choices": {
+        "hosting": "GitHub Pages",
+        "dns": "Cloudflare DNS",
+        "analyticsPrimary": "GoatCounter hosted",
+        "analyticsSecondary": "Cloudflare Web Analytics",
+        "newsletter": "Buttondown Free",
+        "social": "Buffer Free",
+        "launch": ["Product Hunt", "AlternativeTo", "Softpedia", "FossHub"],
+        "windows": ["winget-pkgs", "Chocolatey"],
+        "feedback": "GitHub Issues",
+        "transactionalEmail": "Resend Free",
+        "monitoring": ["Better Stack Free", "UptimeRobot Free"],
+        "automation": "GitHub Actions",
+        "crash": "None in Toolbox; Sentry Free for Bartender Aid",
+        "backend": "Render Free + Neon Free",
+        "shortLinks": "Direct UTM links"
+      }
+    },
+    "under30Usd": {
+      "monthlyCostUsd": 25,
+      "choices": {
+        "hosting": "Cloudflare Workers static assets (free tier)",
+        "analytics": "Plausible Starter ($9)",
+        "newsletter": "Buttondown Basic ($9)",
+        "backend": "Render Starter ($7)",
+        "database": "Neon Free",
+        "monitoring": "Better Stack Free",
+        "transactionalEmail": "Resend Free",
+        "social": "Buffer Free",
+        "feedback": "GitHub Issues"
+      },
+      "optionalWithinCeiling": [
+        "Cloudflare Workers Paid $5/month if free request limit is exceeded (total $30)",
+        "Do not add Sentry Team ($26), Buffer paid channels, or Dub Pro; they break the ceiling"
+      ]
+    }
+  },
+  "firstIntegrations": [
+    {
+      "order": 1,
+      "name": "Deploy landing page to GitHub Pages",
+      "docs": [
+        "https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site",
+        "https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site"
+      ],
+      "auth": "GitHub Actions GITHUB_TOKEN",
+      "effortHours": "1-2",
+      "acceptance": "HTTPS site serves the landing page; HTTP redirects; download points to latest release; 360 px layout works"
+    },
+    {
+      "order": 2,
+      "name": "Add GoatCounter and UTM convention",
+      "docs": [
+        "https://goatcounter.com/help/api",
+        "https://www.goatcounter.com/help/start"
+      ],
+      "auth": "Per-site API token for reads; tracking script needs no auth",
+      "effortHours": "1",
+      "acceptance": "Visits appear; UTM links attribute correctly; analytics sets no cookies"
+    },
+    {
+      "order": 3,
+      "name": "Wire newsletter form to Buttondown",
+      "docs": [
+        "https://docs.buttondown.com/api-introduction"
+      ],
+      "auth": "Buttondown API key, server-side only",
+      "effortHours": "1-2",
+      "acceptance": "Test signup receives confirmation; subscriber shows source/consent; unsubscribe and export work"
+    },
+    {
+      "order": 4,
+      "name": "Automate winget manifest",
+      "docs": [
+        "https://learn.microsoft.com/en-us/windows/package-manager/package/repository",
+        "https://github.com/microsoft/winget-create"
+      ],
+      "auth": "GitHub token with fork/PR permissions",
+      "effortHours": "2-4 first package; 0.5 per release",
+      "acceptance": "winget install works on a clean Windows VM; manifest PR passes validation; next release updates with one command"
+    },
+    {
+      "order": 5,
+      "name": "Create Better Stack monitors and status page",
+      "docs": [
+        "https://betterstack.com/docs/uptime/api/"
+      ],
+      "auth": "Better Stack API token",
+      "effortHours": "0.5-1",
+      "acceptance": "Forced failure alerts within 5 minutes; status page shows site, release, and API health; Render stays warm"
+    }
+  ],
+  "ownerDecisions": [
+    {
+      "decision": "Domain",
+      "default": "Buy one via Cloudflare Registrar (about $10-15/year)",
+      "blocksLaunch": false
+    },
+    {
+      "decision": "Newsletter vendor",
+      "default": "Buttondown Free; switch to Kit or MailerLite at 90 subscribers",
+      "blocksLaunch": true
+    },
+    {
+      "decision": "Analytics",
+      "default": "GoatCounter + Cloudflare Web Analytics",
+      "blocksLaunch": false
+    },
+    {
+      "decision": "Crash reporting",
+      "default": "No in-app telemetry in Toolbox; Sentry Free for Bartender Aid only",
+      "blocksLaunch": false
+    },
+    {
+      "decision": "SmartScreen/signing",
+      "default": "Evaluate Microsoft Store MSIX (free Store signing) before buying a certificate",
+      "blocksLaunch": true
+    },
+    {
+      "decision": "Mobile sequencing",
+      "default": "Android internal testing now; iOS after 30-day retention",
+      "blocksLaunch": false
+    },
+    {
+      "decision": "Social scheduler",
+      "default": "Buffer Free",
+      "blocksLaunch": false
+    },
+    {
+      "decision": "Backend hosting",
+      "default": "Render Starter ($7/month) before public launch",
+      "blocksLaunch": false
+    },
+    {
+      "decision": "Product Hunt date",
+      "default": "After site, download, and first-run are stable",
+      "blocksLaunch": true
+    },
+    {
+      "decision": "Budget tier",
+      "default": "Approve $0 now; pre-approve $25/month if growth justifies it",
+      "blocksLaunch": false
+    }
+  ]
+}

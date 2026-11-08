@@ -50,12 +50,14 @@ interface SiteState {
   selected?: unknown
   queueLength?: unknown
   upNext?: unknown
+  mini?: unknown
 }
 
 let host: BrowserWindow | null = null
 let attached = false
 let pageVisible = false
 let pollTimer: ReturnType<typeof setInterval> | null = null
+let miniTimer: ReturnType<typeof setInterval> | null = null
 let pollBusy = false
 let probeFailures = 0
 let status: ArtistWaveStatus = closedStatus()
@@ -67,6 +69,7 @@ function closedStatus(): ArtistWaveStatus {
     loading: false,
     ready: false,
     error: null,
+    mini: false,
     snapshot: null
   }
 }
@@ -90,6 +93,19 @@ function update(patch: Partial<ArtistWaveStatus>): void {
 
 function sameAppUrl(url: string): boolean {
   return url.startsWith(APP_PREFIX)
+}
+
+export function isArtistWaveMiniUrl(raw: string): boolean {
+  try {
+    const base = new URL(APP_PREFIX)
+    const target = new URL(raw)
+    return (
+      target.origin === base.origin &&
+      target.pathname === `${base.pathname}mini-player.html`
+    )
+  } catch {
+    return false
+  }
 }
 
 function findFrame(window: BrowserWindow): WebFrameMain | null {
@@ -146,7 +162,8 @@ const PROBE_SCRIPT = `(() => {
       shuffle: state.shuffle,
       repeat: state.repeat,
       queueLength: queue.length + smart.length,
-      upNext
+      upNext,
+      mini: document.body.classList.contains('mini-player-active')
     }
   } catch {
     return null
@@ -230,14 +247,17 @@ async function poll(): Promise<ArtistWaveStatus> {
     }
 
     probeFailures = 0
+    const mini = raw.mini === true
     status = {
       open: true,
       visible: pageVisible,
       loading: false,
       ready: true,
       error: null,
+      mini,
       snapshot: normalizeSnapshot(raw)
     }
+    if (!mini) stopMiniWatch()
     broadcast()
   } catch {
     if (!attached) return status
@@ -259,6 +279,11 @@ function startPolling(): void {
   pollTimer = setInterval(() => void poll(), POLL_MS)
 }
 
+function stopMiniWatch(): void {
+  if (miniTimer) clearInterval(miniTimer)
+  miniTimer = null
+}
+
 export function attachArtistWave(window: BrowserWindow): ArtistWaveStatus {
   host = window
   attached = true
@@ -269,6 +294,7 @@ export function attachArtistWave(window: BrowserWindow): ArtistWaveStatus {
     loading: true,
     ready: false,
     error: null,
+    mini: false,
     snapshot: null
   }
   broadcast()
@@ -277,11 +303,30 @@ export function attachArtistWave(window: BrowserWindow): ArtistWaveStatus {
   return status
 }
 
+export function requestArtistWaveMini(): void {
+  if (!attached) return
+  update({ mini: true })
+  setTimeout(() => {
+    if (attached) void poll()
+  }, 120)
+  stopMiniWatch()
+  // The site's mini panel closes itself; watch a little faster so the window
+  // expands promptly when that happens.
+  miniTimer = setInterval(() => {
+    if (!attached) {
+      stopMiniWatch()
+      return
+    }
+    void poll()
+  }, 300)
+}
+
 export function detachArtistWave(): ArtistWaveStatus {
   attached = false
   host = null
   if (pollTimer) clearInterval(pollTimer)
   pollTimer = null
+  stopMiniWatch()
   pollBusy = false
   probeFailures = 0
   status = closedStatus()
@@ -370,5 +415,6 @@ export function stopArtistWave(): void {
   host = null
   if (pollTimer) clearInterval(pollTimer)
   pollTimer = null
+  stopMiniWatch()
   pollBusy = false
 }

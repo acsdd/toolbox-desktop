@@ -278,6 +278,7 @@ export interface ArtistWaveStatus {
   loading: boolean
   ready: boolean
   error: string | null
+  mini: boolean
   snapshot: ArtistWaveSnapshot | null
 }
 
@@ -341,6 +342,7 @@ export interface UpdateCheckResult {
 export interface ToolboxApi {
   appWindow: {
     setCompact(compact: boolean, width?: number): Promise<void>
+    setPlayerMini(active: boolean): Promise<void>
     setAlwaysOnTop(value: boolean): Promise<boolean>
   }
   clipboard: {

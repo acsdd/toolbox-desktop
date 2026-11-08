@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toolbox — Your private Windows toolbox</title>
+<meta name="description" content="Toolbox is a local-first Windows toolbox: notes, an encrypted API vault, clipboard history, file organizer, system stats, feeds and backups in one window. No account, no cloud, no telemetry.">
+<meta name="theme-color" content="#080b11">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Toolbox — Your private Windows toolbox">
+<meta property="og:description" content="Fourteen small Windows tools in one window. Local-first, no account, no cloud, no telemetry. Free and open source under MIT.">
+<meta property="og:image" content="https://28121978444.github.io/toolbox-desktop/assets/home.png">
+<meta property="og:url" content="https://28121978444.github.io/toolbox-desktop/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Toolbox — Your private Windows toolbox">
+<meta name="twitter:description" content="Fourteen small Windows tools in one window. Local-first, no account, no cloud, no telemetry. Free and open source under MIT.">
+<meta name="twitter:image" content="https://28121978444.github.io/toolbox-desktop/assets/home.png">
+<link rel="canonical" href="https://28121978444.github.io/toolbox-desktop/">
+<link rel="icon" type="image/png" href="assets/icon.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-nav">
+  <div class="container nav-inner">
+    <a class="brand" href="#top" aria-label="Toolbox, back to top">
+      <img class="brand-mark" src="assets/icon.png" alt="" width="36" height="36" decoding="async">
+      <span class="brand-text">
+        <strong>Toolbox</strong>
+        <small>Customizable utilities for Windows</small>
+      </span>
+    </a>
+
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#gallery">Screens</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#updates">Updates</a>
+      <a href="#bartender">Bartender Aid</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+
+    <a class="btn btn-primary btn-sm nav-cta" href="https://github.com/28121978444/toolbox-desktop/releases/latest">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
+      Download
+    </a>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="pill-dot" aria-hidden="true"></span> <span class="eyebrow-version">v0.9.3</span> · Windows 10 &amp; 11 · MIT</p>
+        <h1>Everything you need,<br><span class="grad">one window.</span></h1>
+        <p class="lede">Your private Windows toolbox — no account, no cloud. Fourteen small tools for notes, keys, files and feeds, all running locally on your PC.</p>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="https://github.com/28121978444/toolbox-desktop/releases/latest">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
+            Download for Windows
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/28121978444/toolbox-desktop">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 19c-4.3 1.4-4.3-2.2-6-2.8m12 5.3v-3.6a3.1 3.1 0 0 0-.9-2.4c3-.3 6.1-1.5 6.1-6.6a5.2 5.2 0 0 0-1.4-3.6 4.8 4.8 0 0 0-.1-3.6s-1.1-.3-3.6 1.4a12.4 12.4 0 0 0-6.6 0C6.4 1.4 5.3 1.7 5.3 1.7a4.8 4.8 0 0 0-.1 3.6A5.2 5.2 0 0 0 3.8 8.9c0 5.1 3.1 6.3 6.1 6.6a3.1 3.1 0 0 0-.9 2.4v3.6"/></svg>
+            View on GitHub
+          </a>
+        </div>
+
+        <p class="hero-note">Per-user installer · No admin rights · Portable build</p>
+      </div>
+
+      <div class="hero-visual">
+        <div class="window-frame">
+          <div class="window-bar">
+            <span class="window-app">
+              <img src="assets/icon.png" alt="" width="16" height="16" decoding="async">
+              Toolbox
+            </span>
+            <span class="window-title">Workspace</span>
+            <span class="window-badge">14 tools</span>
+          </div>
+          <img class="window-shot" src="assets/home.png" alt="Toolbox workspace: a dark dashboard with tool cards for quick notes, API vault, clipboard history, file organizer, system dashboard, encrypted backup, clock and weather, and text stats." width="1174" height="910" fetchpriority="high" decoding="async">
+        </div>
+        <div class="float-card">
+          <span class="float-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          </span>
+          <span><strong>Vault sealed locally</strong><small>Windows DPAPI encryption, no cloud copy</small></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <ul class="trust-bar" aria-label="What Toolbox promises">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v6c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg> Local-first by default</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5 5l14 14"/></svg> No telemetry, ever</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> Encrypted secrets &amp; backups</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg> MIT licensed source</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section class="section" id="gallery" aria-labelledby="gallery-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">A look inside</p>
+        <h2 id="gallery-title">Built like an app, not a webpage.</h2>
+        <p>Three screens, one window. Every tool opens in place, with the header clock, weather and player always within reach.</p>
+      </div>
+
+      <div class="gallery-tabs" role="tablist" aria-label="Toolbox screenshots">
+        <button type="button" class="gallery-tab" id="tab-workspace" role="tab" aria-selected="true" aria-controls="panel-workspace" tabindex="0">Workspace</button>
+        <button type="button" class="gallery-tab" id="tab-updates" role="tab" aria-selected="false" aria-controls="panel-updates" tabindex="-1">App updates</button>
+        <button type="button" class="gallery-tab" id="tab-bartender" role="tab" aria-selected="false" aria-controls="panel-bartender" tabindex="-1">Bartender Aid</button>
+        <span class="gallery-hint" aria-hidden="true">← → to switch</span>
+      </div>
+
+      <div class="gallery-stage">
+        <figure class="shot-panel" id="panel-workspace" role="tabpanel" aria-labelledby="tab-workspace" tabindex="0">
+          <div class="shot-frame">
+            <img src="assets/home.png" alt="The Toolbox workspace with eight workspace tools and six connected tools shown as cards." width="1174" height="910" loading="lazy" decoding="async">
+          </div>
+          <figcaption>
+            <span>Workspace — pick a tool, it opens in the same window. No tabs, no second app.</span>
+            <span class="caption-tag">v0.9.3</span>
+          </figcaption>
+        </figure>
+
+        <figure class="shot-panel" id="panel-updates" role="tabpanel" aria-labelledby="tab-updates" tabindex="0" hidden>
+          <div class="shot-frame">
+            <img src="assets/updates.png" alt="The App updates page, with a release source field, a Check now button and the installed version, plus toggles for connected tools." width="1174" height="910" loading="lazy" decoding="async">
+          </div>
+          <figcaption>
+            <span>App updates — point it at a repo or manifest; the download opens in your browser.</span>
+            <span class="caption-tag">Nothing installs silently</span>
+          </figcaption>
+        </figure>
+
+        <figure class="shot-panel" id="panel-bartender" role="tabpanel" aria-labelledby="tab-bartender" tabindex="0" hidden>
+          <div class="shot-frame">
+            <img src="assets/bartender.png" alt="Bartender Aid with 41 bar ingredients, five selected, and one cocktail ready to pour." width="1174" height="910" loading="lazy" decoding="async">
+          </div>
+          <figcaption>
+            <span>Bartender Aid — tick what's behind the bar, see what you can pour tonight.</span>
+            <span class="caption-tag">41 ingredients</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features" aria-labelledby="features-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">The toolkit</p>
+        <h2 id="features-title">Small tools that stay out of the way.</h2>
+        <p>Every tool reads and writes locally. Open one, finish the job, close it — nothing syncs in the background.</p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature ac-blue">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          </span>
+          <h3>Quick notes</h3>
+          <p>A scratchpad for thoughts, snippets and stand-ups. Saved locally, always there.</p>
+        </article>
+
+        <article class="feature ac-violet">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 12h8M17 12v3M20 12v2"/></svg>
+          </span>
+          <h3>API vault</h3>
+          <p>Keys and tokens encrypted on this PC. Copy on demand — values are never shown again.</p>
+        </article>
+
+        <article class="feature ac-green">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 11h6M9 15h6M9 19h3"/></svg>
+          </span>
+          <h3>Clipboard history</h3>
+          <p>Search and re-copy anything you copied recently, kept in memory on your machine.</p>
+        </article>
+
+        <article class="feature ac-amber">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 10h18"/></svg>
+          </span>
+          <h3>File organizer</h3>
+          <p>Sort a messy folder into type subfolders in one pass — without overwriting a file.</p>
+        </article>
+
+        <article class="feature ac-red">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/><circle cx="12" cy="18" r="1.2"/></svg>
+          </span>
+          <h3>System dashboard</h3>
+          <p>Live CPU, memory, disk and uptime, plus the heaviest processes — no admin rights.</p>
+        </article>
+
+        <article class="feature ac-teal">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          </span>
+          <h3>Encrypted backup</h3>
+          <p>Vault and layout exported as one AES-256-GCM file, locked with your passphrase.</p>
+        </article>
+
+        <article class="feature ac-amber">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>
+          </span>
+          <h3>Clock &amp; weather</h3>
+          <p>A precise local clock, current conditions and a second clock for any city.</p>
+        </article>
+
+        <article class="feature ac-blue">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 6h14M12 6v12M9 18h6"/></svg>
+          </span>
+          <h3>Text stats</h3>
+          <p>Word, character and line counts for anything you paste, updated as you type.</p>
+        </article>
+
+        <article class="feature ac-red">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          </span>
+          <h3>Gmail announcer</h3>
+          <p>Read-only inbox alerts over IMAP, with an app password stored encrypted on this PC.</p>
+        </article>
+
+        <article class="feature ac-violet">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+          </span>
+          <h3>GitHub notifier</h3>
+          <p>Pull requests, reviews and mentions at a glance, with Windows alerts and your own token.</p>
+        </article>
+
+        <article class="feature ac-green">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 11a9 9 0 0 1 9 9M4 5a15 15 0 0 1 15 15"/><circle cx="5" cy="19" r="1.4"/></svg>
+          </span>
+          <h3>RSS &amp; crypto watch</h3>
+          <p>Follow feeds you choose and keep an eye on a few coins, without another tab.</p>
+        </article>
+
+        <article class="feature ac-teal">
+          <span class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
+          </span>
+          <h3>ArtistWave player</h3>
+          <p>A compact music player that sits in the header while you work.</p>
+        </article>
+      </div>
+
+      <p class="extras">
+        <strong>Also inside</strong>
+        <span class="chip">Bartender Aid</span>
+        <span class="chip">Custom user tools</span>
+        <span class="chip">Mini bar</span>
+        <span class="chip">Adjustable card sizes</span>
+        <span class="chip">Built-in update checker</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- Privacy -->
+  <section class="section band" id="privacy" aria-labelledby="privacy-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Private by design</p>
+        <h2 id="privacy-title">Your data never leaves the room.</h2>
+        <p>Toolbox has no backend and no sign-in. Notes, keys, clipboard history and layout live in files on your PC — there is no account to create and no analytics SDK inside.</p>
+      </div>
+
+      <div class="privacy-grid">
+        <article class="privacy-card">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5 5l14 14"/></svg>
+          </span>
+          <h3>No telemetry</h3>
+          <p>No analytics, no crash reporting, no device identifiers. There is no server to receive them.</p>
+        </article>
+
+        <article class="privacy-card">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          </span>
+          <h3>DPAPI-encrypted vault</h3>
+          <p>Secrets are sealed with Windows <code>safeStorage</code> and never handed back to the interface.</p>
+        </article>
+
+        <article class="privacy-card">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V6z"/><path d="M12 8v4M12 15h.01"/></svg>
+          </span>
+          <h3>AES-256-GCM backups</h3>
+          <p>One encrypted file for vault and layout, unlocked only by a passphrase you choose.</p>
+        </article>
+      </div>
+
+      <div class="data-panel">
+        <div class="data-head">
+          <h3>What actually leaves your PC</h3>
+          <p>Only requests you switch on — and none of them carry an account or an identifier.</p>
+        </div>
+        <ul class="data-list">
+          <li>
+            <span class="data-name">App updates</span>
+            <span class="data-detail">One HTTPS request to GitHub or your own manifest, with <code>Toolbox/&lt;version&gt;</code> as the only user agent.</span>
+            <span class="data-tag">HTTPS</span>
+          </li>
+          <li>
+            <span class="data-name">Weather</span>
+            <span class="data-detail">The city you configure, sent to Open-Meteo for current conditions.</span>
+            <span class="data-tag">Opt-in</span>
+          </li>
+          <li>
+            <span class="data-name">RSS reader</span>
+            <span class="data-detail">The feed URLs you add yourself. Nothing is recommended or phoned home.</span>
+            <span class="data-tag">Opt-in</span>
+          </li>
+          <li>
+            <span class="data-name">Gmail announcer</span>
+            <span class="data-detail">Read-only IMAP with an app password stored encrypted on this machine.</span>
+            <span class="data-tag">Read-only</span>
+          </li>
+          <li>
+            <span class="data-name">GitHub notifier</span>
+            <span class="data-detail">GitHub's API, using the personal token you keep in the vault.</span>
+            <span class="data-tag">Your token</span>
+          </li>
+          <li>
+            <span class="data-name">ArtistWave player</span>
+            <span class="data-detail">Loads the embedded player page from GitHub Pages when you open it. No account or identifier is sent.</span>
+            <span class="data-tag">Opt-in</span>
+          </li>
+          <li>
+            <span class="data-name">Crypto watch</span>
+            <span class="data-detail">Public price data from CoinGecko for the coins you pick.</span>
+            <span class="data-tag">Public</span>
+          </li>
+          <li>
+            <span class="data-name">Notes, vault, clipboard, layout</span>
+            <span class="data-detail">Files under your Windows app data folder. Nothing is uploaded, ever.</span>
+            <span class="data-tag">Local</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Updates -->
+  <section class="section" id="updates" aria-labelledby="updates-title">
+    <div class="container updates-grid">
+      <div>
+        <div class="section-head section-head--left">
+          <p class="eyebrow">Updates that ask first</p>
+          <h2 id="updates-title">No silent updates. No hidden updater.</h2>
+          <p>Toolbox checks a source you control, then hands the download to your browser. The app never fetches or installs a build on its own.</p>
+        </div>
+
+        <ol class="steps">
+          <li>
+            <span class="step-num" aria-hidden="true">01</span>
+            <div>
+              <h3>Point it at a source</h3>
+              <p>Use <code>owner/repo</code>, a GitHub repository URL, or your own HTTPS JSON manifest.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">02</span>
+            <div>
+              <h3>It checks quietly</h3>
+              <p>Once at startup and whenever you press <strong>Check now</strong>. HTTPS only; loopback and private addresses are rejected.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">03</span>
+            <div>
+              <h3>You decide</h3>
+              <p>An <strong>Update</strong> pill appears in the header. The details page opens the release in your browser — nothing installs by itself.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="flow-card" role="group" aria-label="How the update check works">
+        <div class="flow-item">
+          <span class="flow-kicker">Release source</span>
+          <span class="flow-value">28121978444/toolbox-desktop</span>
+          <span class="flow-sub">or any HTTPS JSON manifest</span>
+        </div>
+        <div class="flow-link" aria-hidden="true"></div>
+        <div class="flow-item">
+          <span class="flow-kicker">Check</span>
+          <span class="flow-value">Startup + Check now</span>
+          <span class="flow-sub">Version compared locally · no identifiers sent</span>
+        </div>
+        <div class="flow-link" aria-hidden="true"></div>
+        <div class="flow-item flow-item--accent">
+          <span class="flow-kicker">Result</span>
+          <span class="flow-value">Update pill in the header</span>
+          <span class="flow-sub">Opens the release page in your default browser</span>
+        </div>
+        <p class="flow-note">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v6c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          The app never downloads or installs a build itself.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bartender Aid -->
+  <section class="section" id="bartender" aria-labelledby="bartender-title">
+    <div class="container">
+      <div class="bartender-panel">
+        <div class="bartender-copy">
+          <p class="eyebrow eyebrow--amber"><span class="pill-dot pill-dot--amber" aria-hidden="true"></span> Also in the box · mobile in progress</p>
+          <h2 id="bartender-title">Bartender Aid — pour what you have.</h2>
+          <p class="lede lede--small">Tick the bottles, mixers and garnishes behind your bar. Bartender Aid shows the cocktails you can make right now, without a recipe hunt.</p>
+
+          <ul class="check-list">
+            <li>41 bar ingredients, grouped by garnish, liqueur, mixer and other.</li>
+            <li>Match by what's in stock — not by what a recipe wishes you had.</li>
+            <li>Already built into Toolbox. No separate Windows install.</li>
+          </ul>
+
+          <div class="mobile-card">
+            <span class="mobile-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+            </span>
+            <div class="mobile-copy">
+              <strong>Mobile app — in progress</strong>
+              <p>Play Store internal testing and an App Store listing are planned. There is no public mobile build yet.</p>
+            </div>
+            <button class="btn btn-muted" type="button" disabled aria-describedby="mobile-note">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
+              Download for mobile
+            </button>
+            <p class="mobile-note" id="mobile-note">Placeholder — no download link until the first store build ships.</p>
+          </div>
+        </div>
+
+        <figure class="bartender-figure">
+          <div class="shot-frame shot-frame--amber">
+            <img src="assets/bartender.png" alt="Bartender Aid with ingredient toggles and a result of one cocktail ready to pour." width="1174" height="910" loading="lazy" decoding="async">
+          </div>
+          <figcaption>41 ingredients · one ready to pour · all offline</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="container faq-wrap">
+      <div class="section-head section-head--center">
+        <p class="eyebrow">Straight answers</p>
+        <h2 id="faq-title">Questions people ask first.</h2>
+      </div>
+
+      <div class="faq-list">
+        <details>
+          <summary>Windows says "Windows protected your PC". Is that bad?</summary>
+          <p>No. The builds are not code-signed yet, so SmartScreen warns about a new, unknown publisher. Download only from the official <a href="https://github.com/28121978444/toolbox-desktop/releases/latest">Releases page</a>, then choose <strong>More info → Run anyway</strong>. A code-signing certificate is planned; until then the warning is expected.</p>
+        </details>
+        <details>
+          <summary>Does Toolbox update itself?</summary>
+          <p>No. It checks the release source you enter at startup and on demand, then shows an <strong>Update</strong> pill. The download opens in your browser and you install it yourself. The app never downloads or runs an installer.</p>
+        </details>
+        <details>
+          <summary>What data does it collect about me?</summary>
+          <p>None. There is no telemetry, no analytics and no crash reporting. The only network requests are the ones you enable — weather, feeds, Gmail, GitHub, crypto prices, the ArtistWave player — and the occasional update check. All of them are listed above.</p>
+        </details>
+        <details>
+          <summary>Where are my notes and keys stored?</summary>
+          <p>In Toolbox's local app data folder (<code>%APPDATA%\Toolbox</code>). The vault is sealed with Windows DPAPI; backups are a single AES-256-GCM file. Uninstalling keeps app data by default, so remove the folder yourself if you want a clean slate.</p>
+        </details>
+        <details>
+          <summary>Is it really free and open source?</summary>
+          <p>Yes — MIT licensed. Read, fork, modify and redistribute the source on <a href="https://github.com/28121978444/toolbox-desktop">GitHub</a>. There is no paid tier and no account.</p>
+        </details>
+        <details>
+          <summary>Installer or portable — which should I pick?</summary>
+          <p>The per-user installer needs no admin rights and adds Start Menu and desktop shortcuts. The portable build is a single executable you can run from anywhere, including a USB drive. Both run the same app.</p>
+        </details>
+        <details>
+          <summary>Does it run on macOS or Linux?</summary>
+          <p>Not today. Toolbox targets Windows 10 and 11 on x64, and several tools rely on Windows APIs such as DPAPI.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#top" aria-label="Toolbox, back to top">
+          <img class="brand-mark" src="assets/icon.png" alt="" width="34" height="34" loading="lazy" decoding="async">
+          <span class="brand-text"><strong>Toolbox</strong><small>v0.9.3 · Windows x64</small></span>
+        </a>
+        <p>Your private Windows toolbox. Built for people who would rather keep their data on their own machine.</p>
+      </div>
+
+      <nav class="footer-col" aria-label="Product">
+        <h2>Product</h2>
+        <a href="#features">Features</a>
+        <a href="#gallery">Screens</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#updates">Updates</a>
+        <a href="#bartender">Bartender Aid</a>
+      </nav>
+
+      <nav class="footer-col" aria-label="Download">
+        <h2>Download</h2>
+        <a href="https://github.com/28121978444/toolbox-desktop/releases/latest">Latest release</a>
+        <a href="https://github.com/28121978444/toolbox-desktop/releases">All releases</a>
+        <a href="https://github.com/28121978444/toolbox-desktop#readme">Readme</a>
+        <a href="#faq">SmartScreen help</a>
+      </nav>
+
+      <nav class="footer-col" aria-label="Project">
+        <h2>Project</h2>
+        <a href="https://github.com/28121978444/toolbox-desktop">GitHub</a>
+        <a href="https://github.com/28121978444/toolbox-desktop/issues">Issues</a>
+        <a href="https://github.com/28121978444/toolbox-desktop/blob/main/LICENSE">MIT license</a>
+      </nav>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2026 Alpha Team · Toolbox is MIT licensed</p>
+      <p>No cookies, no analytics on this page.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>

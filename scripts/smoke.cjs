@@ -370,6 +370,9 @@ async function main() {
       artistwaveStatus: null,
       artistwaveAttached: false,
       artistwaveDetached: false,
+      artistwaveMiniResized: false,
+      artistwaveMiniWidth: 0,
+      artistwaveMiniRestoredWidth: 0,
       artistwaveCommandRejected: false,
       artistwaveInvalidRejected: false,
       artistwaveMessage: '',
@@ -554,6 +557,21 @@ async function main() {
       document.querySelector('.player-frame[src*="ArtistWave"]')
     )
     result.artistwaveHeader = Boolean(document.querySelector('.player-button'))
+
+    try {
+      const beforeMini = window.outerWidth
+      await window.api.appWindow.setPlayerMini(true)
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      result.artistwaveMiniWidth = window.outerWidth
+      await window.api.appWindow.setPlayerMini(false)
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      result.artistwaveMiniRestoredWidth = window.outerWidth
+      result.artistwaveMiniResized =
+        result.artistwaveMiniWidth < 500 &&
+        result.artistwaveMiniRestoredWidth >= beforeMini - 40
+    } catch (cause) {
+      result.artistwaveMessage = String(cause?.message ?? cause)
+    }
 
     try {
       result.artistwaveStatus = await window.api.artistwave.status()
@@ -1349,6 +1367,10 @@ async function main() {
   expect(pagesUi.artistwaveHeader, 'ArtistWave player button is missing beside the clock')
   expect(pagesUi.artistwaveAttached, 'ArtistWave did not attach to the embedded page')
   expect(pagesUi.artistwaveDetached, 'ArtistWave did not detach cleanly')
+  expect(
+    pagesUi.artistwaveMiniResized,
+    `ArtistWave mini window did not shrink/restore: ${pagesUi.artistwaveMiniWidth} -> ${pagesUi.artistwaveMiniRestoredWidth}`
+  )
   expect(
     pagesUi.artistwaveCommandRejected,
     `ArtistWave accepted a command without an open player: ${pagesUi.artistwaveMessage}`

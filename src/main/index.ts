@@ -53,12 +53,49 @@ import {
   commandArtistWave,
   detachArtistWave,
   getArtistWaveStatus,
+  isArtistWaveMiniUrl,
+  requestArtistWaveMini,
   setArtistWaveVisible,
   stopArtistWave
 } from './services/artistwave'
 import { checkForUpdate, getAppVersion, openUpdatePage } from './services/updates'
 
 let restoreBounds: { bounds: Electron.Rectangle; maximized: boolean } | null = null
+let playerMiniRestore: { bounds: Electron.Rectangle; maximized: boolean } | null = null
+
+function setPlayerMiniWindow(window: BrowserWindow, active: boolean): void {
+  if (active) {
+    if (!playerMiniRestore) {
+      playerMiniRestore = { bounds: window.getBounds(), maximized: window.isMaximized() }
+    }
+    if (window.isMaximized()) window.unmaximize()
+
+    const display = screen.getDisplayMatching(window.getBounds())
+    const work = display.workArea
+    const width = Math.min(380, work.width - 24)
+    const height = Math.min(work.height, playerMiniRestore.bounds.height)
+    const x = Math.max(work.x, work.x + work.width - width - 26)
+
+    window.setResizable(true)
+    window.setMaximizable(false)
+    window.setMinimumSize(320, 480)
+    window.setBounds({ x, y: work.y, width, height })
+    window.setTitle('ArtistWave mini player')
+    return
+  }
+
+  window.setResizable(true)
+  window.setMaximizable(true)
+  window.setMinimumSize(940, 620)
+  window.setTitle('Toolbox')
+
+  if (playerMiniRestore) {
+    const { bounds, maximized } = playerMiniRestore
+    playerMiniRestore = null
+    window.setBounds(bounds)
+    if (maximized) window.maximize()
+  }
+}
 
 function setCompactWindow(window: BrowserWindow, compact: boolean, width: unknown): void {
   if (compact) {
@@ -96,6 +133,12 @@ function registerIpc(): void {
     const window = BrowserWindow.fromWebContents(event.sender)
     if (!window) return
     setCompactWindow(window, compact === true, width)
+  })
+
+  ipcMain.handle('window:set-player-mini', (event, active: unknown) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (!window) return
+    setPlayerMiniWindow(window, active === true)
   })
 
   ipcMain.handle('window:set-always-on-top', (event, value: unknown) => {
@@ -252,9 +295,14 @@ function createWindow(): void {
 
   window.on('ready-to-show', () => window.show())
 
-  // ArtistWave runs embedded. Anything that tries to open a separate window
-  // goes to the system browser instead, so the app stays a single window.
+  // ArtistWave runs embedded. Its own mini-player button should shrink this
+  // window instead of spawning a browser popup; every other popup opens in the
+  // system browser so the app stays a single window.
   window.webContents.setWindowOpenHandler(({ url }) => {
+    if (isArtistWaveMiniUrl(url)) {
+      requestArtistWaveMini()
+      return { action: 'deny' }
+    }
     if (/^https?:\/\//i.test(url)) void shell.openExternal(url)
     return { action: 'deny' }
   })

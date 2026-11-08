@@ -97,6 +97,7 @@ function App() {
   const [userToolErrors, setUserToolErrors] = useState<UserToolError[]>([])
   const [userToolsLoaded, setUserToolsLoaded] = useState(false)
   const [compact, setCompact] = useState(() => localStorage.getItem(COMPACT_KEY) === '1')
+  const [playerMini, setPlayerMini] = useState(false)
   const [pinned, setPinned] = useState(() => localStorage.getItem(PINNED_KEY) === '1')
   const [cardSize, setCardSize] = useState<CardSize>(readCardSize)
   const [homePage, setHomePage] = useState<HomePage>(readHomePage)
@@ -108,6 +109,7 @@ function App() {
     result: null
   })
   const compactApplied = useRef(false)
+  const miniSeen = useRef(false)
 
   useEffect(() => {
     localStorage.setItem(DISABLED_KEY, JSON.stringify(disabled))
@@ -261,6 +263,33 @@ function App() {
     }
   }, [compact, miniWidth])
 
+  useEffect(() => {
+    if (!playerStarted) {
+      miniSeen.current = false
+      setPlayerMini(false)
+      return
+    }
+
+    const unsubscribe = window.api.artistwave.onUpdate((next) => {
+      if (next.mini) {
+        miniSeen.current = true
+        setPlayerMini(true)
+      } else if (miniSeen.current) {
+        miniSeen.current = false
+        setPlayerMini(false)
+      }
+    })
+    return unsubscribe
+  }, [playerStarted])
+
+  useEffect(() => {
+    if (!playerMini) return
+    void window.api.appWindow.setPlayerMini(true).catch(() => {})
+    return () => {
+      void window.api.appWindow.setPlayerMini(false).catch(() => {})
+    }
+  }, [playerMini])
+
   const expand = () => {
     setCompact(false)
     setView({ kind: 'home' })
@@ -277,6 +306,8 @@ function App() {
 
   const closePlayer = useCallback(() => {
     setPlayerStarted(false)
+    setPlayerMini(false)
+    miniSeen.current = false
     setView({ kind: 'home' })
     void window.api.artistwave.detach().catch(() => {})
   }, [])
@@ -312,7 +343,7 @@ function App() {
     view.kind === 'tool' ? allTools.find((tool) => tool.id === view.id) : undefined
 
   return (
-    <div className={`app ${compact ? 'app-compact' : ''}`}>
+    <div className={`app ${compact ? 'app-compact' : ''} ${playerMini ? 'app-player-mini' : ''}`}>
       {compact ? (
         <MiniBar
           tools={visibleTools}

@@ -4,6 +4,7 @@ import type { ArtistWaveStatus, GitHubStatus, MailStatus, ToolboxApi } from '../
 const api: ToolboxApi = {
   appWindow: {
     setCompact: (compact, width) => ipcRenderer.invoke('window:set-compact', compact, width),
+    setPlayerMini: (active) => ipcRenderer.invoke('window:set-player-mini', active),
     setAlwaysOnTop: (value) => ipcRenderer.invoke('window:set-always-on-top', value)
   },
   clipboard: {
