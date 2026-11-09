@@ -33,7 +33,7 @@ jobs:
         # Point electron-builder at the Electron binaries already unpacked by
         # npm ci, so the release does not re-download them (the download
         # mirror intermittently returns 504 on CI).
-        run: npx electron-builder --win --publish never -c.electronDist=node_modules/electron/dist
+        run: npx electron-builder --win --publish never "-c.electronDist=node_modules/electron/dist"
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
 
