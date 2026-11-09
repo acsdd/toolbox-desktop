@@ -29,13 +29,26 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
 
+      # electron-builder downloads the Electron binaries itself (Electron >= 28
+      # no longer ships a postinstall). Cache them between runs and retry the
+      # packaging step: the download mirror intermittently answers 504.
+      - uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\electron-builder\Cache
+          key: electron-builder-win-${{ hashFiles('package-lock.json') }}
+
       - name: Package installers
-        # Point electron-builder at the Electron binaries already unpacked by
-        # npm ci, so the release does not re-download them (the download
-        # mirror intermittently returns 504 on CI).
-        run: npx electron-builder --win --publish never "-c.electronDist=node_modules/electron/dist"
+        shell: pwsh
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            npx electron-builder --win --publish never
+            if ($LASTEXITCODE -eq 0) { exit 0 }
+            Write-Host "electron-builder attempt $attempt failed (exit $LASTEXITCODE); retrying..."
+            Start-Sleep -Seconds 10
+          }
+          exit 1
 
       - name: Build categorized release notes
         shell: bash
