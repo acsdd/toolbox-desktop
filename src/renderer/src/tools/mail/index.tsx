@@ -147,7 +147,8 @@ function MailTool() {
             <h2>Know when mail arrives.</h2>
             <p>
               Toolbox checks your inbox every two minutes and can raise a Windows notification for
-              new unread mail. Your App Password is encrypted on this PC and never leaves it.
+              new unread mail. Your App Password is encrypted on this PC and sent to Gmail over
+              TLS only to sign in for read-only IMAP access.
             </p>
           </div>
         </div>

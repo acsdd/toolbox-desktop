@@ -22,7 +22,7 @@ website/
     └── og.jpg          # 1200 × 630 social preview derived from home.png
 ```
 
-All download buttons point to `https://github.com/28121978444/toolbox-desktop/releases/latest`. There are no forms, cookies or third-party scripts.
+All download buttons point to `https://github.com/acsdd/toolbox-desktop/releases/latest`. There are no forms, cookies or third-party scripts.
 
 ## Preview locally
 
@@ -59,9 +59,9 @@ Go-public checklist:
 
 1. Run the private-repo audit (no secrets or local paths in history).
 2. Make the repository public.
-3. Add the `origin` remote and push `main`.
+3. Confirm `origin` points to `https://github.com/acsdd/toolbox-desktop.git` and push `main` after the audit.
 4. Enable **Settings → Pages → Source: GitHub Actions**.
-5. Run the **Website** workflow (`.github/workflows/pages.yml`); it syncs the version, checks links, then publishes `website/` to <https://28121978444.github.io/toolbox-desktop/>.
+5. Run the **Website** workflow (`.github/workflows/pages.yml`); it syncs the version, checks links, then publishes `website/` to <https://acsdd.github.io/toolbox-desktop/>.
 6. After the first successful deploy, add the `push` trigger described in the workflow comment and keep the URL in `robots.txt` and `sitemap.xml` in sync.
 
 Any static host also works: upload `index.html`, `styles.css`, `app.js`, `404.html`, `robots.txt`, `sitemap.xml`, `.nojekyll` and `assets/` together. No redirects or build settings are required.

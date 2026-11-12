@@ -622,7 +622,7 @@ function Home({
           <p className="hero-copy">
             {connected
               ? 'Connect your accounts and services without leaving the desktop. Credentials are encrypted on this PC — you decide what connects.'
-              : 'Pick a tool and get to work. Everything runs locally on this machine — no accounts, no cloud sync, no telemetry.'}
+              : 'Pick a tool and get to work. Your files stay on this PC. Connected tools contact the services you choose; Toolbox has no account or cloud sync.'}
           </p>
         </div>
         <div className="hero-actions">

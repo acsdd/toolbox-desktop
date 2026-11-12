@@ -14,7 +14,7 @@ Do not apply any change in this document until the owner supplies a beacon token
 
 1. The repository is public and the Pages site is live (currently blocked — the repo is private).
 2. A Cloudflare account (free).
-3. A Web Analytics site entry for the Pages hostname (`28121978444.github.io`) or the custom domain if one is added.
+3. A Web Analytics site entry for the Pages hostname (`acsdd.github.io`) or the custom domain if one is added.
 4. The beacon token copied from Cloudflare. Exact dashboard labels may change; verify at activation time.
 
 ## Activation steps

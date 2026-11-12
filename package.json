@@ -6,11 +6,11 @@
   "author": "Alpha Team",
   "repository": {
     "type": "git",
-    "url": "https://github.com/28121978444/toolbox-desktop.git"
+    "url": "https://github.com/acsdd/toolbox-desktop.git"
   },
-  "homepage": "https://github.com/28121978444/toolbox-desktop#readme",
+  "homepage": "https://github.com/acsdd/toolbox-desktop#readme",
   "bugs": {
-    "url": "https://github.com/28121978444/toolbox-desktop/issues"
+    "url": "https://github.com/acsdd/toolbox-desktop/issues"
   },
   "license": "MIT",
   "main": "./out/main/index.js",

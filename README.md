@@ -1,12 +1,12 @@
 # Toolbox
 
-A local-first Windows toolbox in a single window. Notes, API keys, clipboard history, system stats, feeds, AI app shortcuts, backups and a few distractions — all running on your machine, with no account and no cloud sync.
+A local-first Windows toolbox in a single window. Notes, API keys, clipboard history, system stats, feeds, AI app shortcuts, backups and a few distractions — your files stay on this PC, with no Toolbox account or cloud sync. Connected features contact the services you choose to use.
 
 ![Toolbox home](docs/screenshots/home.png)
 
 ## Highlights
 
-- **Local-first.** Tools read and write locally; nothing is uploaded to a service.
+- **Local-first.** Notes, keys, clipboard history and settings stay on this PC. Connected tools send the requests needed to the services you choose; Toolbox does not sync your files to its own cloud.
 - **Encrypted secrets.** API keys and tokens in the vault, the GitHub token and the Gmail app password are encrypted with Windows `safeStorage` (DPAPI). Vault values are never shown again after saving unless you explicitly copy them.
 - **Encrypted backup.** Export the vault and tool layout as a single AES-256-GCM file, protected by a passphrase you choose.
 - **Built-in update checker.** Point it at a GitHub repository or an HTTPS JSON manifest; it checks at startup and on demand, then opens the download page in your browser. Nothing installs silently.
@@ -51,7 +51,7 @@ Every preset — AI assistants, local model apps and developer tools such as Git
 
 ## Download
 
-Grab the latest Windows x64 build from [Releases](https://github.com/28121978444/toolbox-desktop/releases/latest):
+Grab the latest Windows x64 build from [Releases](https://github.com/acsdd/toolbox-desktop/releases/latest):
 
 - `Toolbox-Setup-<version>.exe` — per-user installer, no admin rights required.
 - `Toolbox-Portable-<version>.exe` — single-file portable build.
@@ -62,7 +62,7 @@ The installers are not code-signed yet, so Windows SmartScreen may show a warnin
 
 Open **Manage tools → App updates** and enter a release source:
 
-- `owner/repo` for a public GitHub repository, e.g. `28121978444/toolbox-desktop`
+- `owner/repo` for a public GitHub repository, e.g. `acsdd/toolbox-desktop`
 - a GitHub repository URL
 - an HTTPS URL to a JSON manifest:
 
@@ -126,7 +126,7 @@ Then open <http://localhost:8080>. Deployment notes, the GitHub Pages workflow a
 - The GitHub token is encrypted with `safeStorage` and never returned to the renderer.
 - The ArtistWave player loads its page from GitHub Pages; it receives no vault data.
 - The AI launchpad stores only preset ids and the custom names/links you add; it scans Start Menu shortcut names locally and opens links through the system browser.
-- Update checks send only an HTTPS request; no identifiers are attached beyond a `Toolbox/<version>` user agent.
+- Update checks use HTTPS and include the app version in the user agent; the release provider receives normal connection details such as your IP address.
 
 ## License
 
