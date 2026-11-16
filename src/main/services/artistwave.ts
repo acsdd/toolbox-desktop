@@ -13,7 +13,7 @@ import type {
  * page through `window.ArtistWaveMiniHost` and mirror its state back to the UI.
  * One window, one player — no second app window to manage.
  */
-const APP_PREFIX = 'https://28121978444.github.io/ArtistWave/'
+const APP_PREFIX = 'https://acsdd.github.io/ArtistWave/'
 const POLL_MS = 1000
 const MAX_PROBE_FAILURES = 20
 const MAX_UP_NEXT = 4

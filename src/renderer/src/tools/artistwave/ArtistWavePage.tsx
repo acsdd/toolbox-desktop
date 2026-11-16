@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { ArtistWaveAction, ArtistWaveStatus, ArtistWaveValue } from '@shared/types'
 import { Icon } from '../../components/Icon'
 
-const APP_URL = 'https://28121978444.github.io/ArtistWave/'
+const APP_URL = 'https://acsdd.github.io/ArtistWave/'
 
 function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause)
