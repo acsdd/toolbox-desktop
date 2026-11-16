@@ -1,17 +1,16 @@
 name: Website
 
-# Manual on purpose: the site links to the repository, so it should only go
-# live once the repository is public and Pages is enabled for this repo.
-# After the go-public checklist passes, add:
-#   push:
-#     branches: [main]
-#     paths:
-#       - 'website/**'
-#       - 'scripts/check-site-links.cjs'
-#       - 'scripts/inject-site-version.cjs'
-#       - 'package.json'
-#       - '.github/workflows/pages.yml'
+# The site links to the repository, so it goes live only now that the
+# repository is public and Pages is enabled for it.
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - 'scripts/check-site-links.cjs'
+      - 'scripts/inject-site-version.cjs'
+      - 'package.json'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
