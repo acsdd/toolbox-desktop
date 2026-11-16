@@ -2,6 +2,8 @@
 
 **Status:** `external_UAT` — released for acceptance testing outside the team. ![status](https://img.shields.io/badge/status-external_UAT-9cf37e?style=flat-square)
 
+**Site:** <https://acsdd.github.io/toolbox-desktop/> — The Toolbox website.
+
 A local-first Windows toolbox in a single window. Notes, API keys, clipboard history, system stats, feeds, AI app shortcuts, backups and a few distractions — your files stay on this PC, with no Toolbox account or cloud sync. Connected features contact the services you choose to use.
 
 ![Toolbox home](docs/screenshots/home.png)
