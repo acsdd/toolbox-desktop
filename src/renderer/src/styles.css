@@ -4310,6 +4310,160 @@ code {
   overflow: hidden;
 }
 
+/* ---------- Widget host (glued building blocks) ----------
+   One flex body holds three stable children — widget screen, vertical tool
+   rail, player — so the player iframe never remounts when modes switch.
+   Mode A (host):  [ widget screen | rail | mini player ]
+   Mode mini:      [ rail | mini player ]
+   Mode B (full):  [ full player | rail ]   (rail on the right)
+   Full and mini players are mutually exclusive. */
+.app-body {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  min-height: 0;
+}
+
+.app-body > .content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.screen-hidden {
+  display: none;
+}
+
+.tool-rail {
+  display: flex;
+  flex: 0 0 64px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 64px;
+  padding: 10px 0;
+  border-left: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, #1c2431, #121923);
+  overflow: hidden;
+}
+
+.rail-brand {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+}
+
+.rail-tools {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.rail-tools::-webkit-scrollbar {
+  display: none;
+}
+
+.rail-tool {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--accent);
+  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+}
+
+.rail-tool:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.rail-tool.active {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.rail-divider {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 1px;
+  background: var(--border);
+}
+
+.rail-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.rail-actions .rail-tool {
+  color: var(--muted);
+}
+
+.rail-actions .rail-tool:hover {
+  background: var(--panel-raised);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.rail-actions .rail-tool.pinned {
+  color: #f0c36a;
+  background: rgba(240, 195, 106, 0.1);
+  border-color: rgba(240, 195, 106, 0.32);
+}
+
+.rail-actions .rail-tool.pinned:hover {
+  color: #ffd98a;
+  background: rgba(240, 195, 106, 0.16);
+  border-color: rgba(240, 195, 106, 0.45);
+}
+
+/* Mode A — widget screen glued beside the mini player. */
+.mode-host > .content {
+  padding: 0;
+  overflow: hidden;
+}
+
+.host-screen {
+  height: 100%;
+  padding: 18px 16px 22px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.host-screen .page {
+  max-width: none;
+  margin: 0;
+}
+
+.mode-host > .player-page {
+  flex: 0 0 340px;
+  width: 340px;
+  border-left: 1px solid var(--border-soft);
+}
+
+/* Plain mini — rail beside the compact player. */
+.mode-mini > .player-page {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Mode B — full player owns the main screen, rail on the right. */
+.mode-full > .player-page {
+  order: -1;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 /* ArtistWave's own mini-player button narrows the app window instead of
    opening a browser popup. Hide the Toolbox chrome so the site's compact
    player fills the whole window. */

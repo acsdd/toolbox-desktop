@@ -381,7 +381,7 @@ export interface ShortcutInput {
 export interface ToolboxApi {
   appWindow: {
     setCompact(compact: boolean, width?: number): Promise<void>
-    setPlayerMini(active: boolean): Promise<void>
+    setPlayerMini(active: boolean, width?: number): Promise<void>
     setAlwaysOnTop(value: boolean): Promise<boolean>
   }
   clipboard: {
@@ -458,6 +458,7 @@ export interface ToolboxApi {
     detach(): Promise<ArtistWaveStatus>
     setVisible(visible: boolean): Promise<ArtistWaveStatus>
     command(action: ArtistWaveAction, value?: ArtistWaveValue): Promise<ArtistWaveStatus>
+    setMini(active: boolean): Promise<ArtistWaveStatus>
     onUpdate(listener: (status: ArtistWaveStatus) => void): () => void
   }
   backup: {

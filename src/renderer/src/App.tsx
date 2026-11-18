@@ -28,6 +28,14 @@ import { relativeTime } from './lib/format'
 
 const BUILT_IN_IDS = tools.map((tool) => tool.id)
 
+// Widget host geometry: a vertical tool rail glued between the widget screen
+// and the player. The mini player and the host share one window-sizing channel.
+const RAIL_WIDTH = 64
+const MINI_PLAYER_WIDTH = 340
+const HOST_SCREEN_WIDTH = 440
+const MINI_RAIL_WIDTH = RAIL_WIDTH + MINI_PLAYER_WIDTH
+const HOST_WIDTH = HOST_SCREEN_WIDTH + RAIL_WIDTH + MINI_PLAYER_WIDTH
+
 const CARD_SIZES: { id: CardSize; label: string; icon: number }[] = [
   { id: 'small', label: 'Small cards', icon: 12 },
   { id: 'medium', label: 'Default card size', icon: 14 },
@@ -98,6 +106,7 @@ function App() {
   const [userToolsLoaded, setUserToolsLoaded] = useState(false)
   const [compact, setCompact] = useState(() => localStorage.getItem(COMPACT_KEY) === '1')
   const [playerMini, setPlayerMini] = useState(false)
+  const [hostWidget, setHostWidget] = useState<string | null>(null)
   const [pinned, setPinned] = useState(() => localStorage.getItem(PINNED_KEY) === '1')
   const [cardSize, setCardSize] = useState<CardSize>(readCardSize)
   const [homePage, setHomePage] = useState<HomePage>(readHomePage)
@@ -110,6 +119,7 @@ function App() {
   })
   const compactApplied = useRef(false)
   const miniSeen = useRef(false)
+  const miniApplied = useRef(false)
 
   useEffect(() => {
     localStorage.setItem(DISABLED_KEY, JSON.stringify(disabled))
@@ -195,12 +205,13 @@ function App() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
-      if (compact) setCompact(false)
+      if (hostWidget) setHostWidget(null)
+      else if (compact) setCompact(false)
       else setView({ kind: 'home' })
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [compact])
+  }, [compact, hostWidget])
 
   const loadUserTools = useCallback(async () => {
     try {
@@ -283,11 +294,21 @@ function App() {
   }, [playerStarted])
 
   useEffect(() => {
-    if (!playerMini) return
-    void window.api.appWindow.setPlayerMini(true).catch(() => {})
-    return () => {
+    if (playerMini) {
+      miniApplied.current = true
+      const width = hostWidget ? HOST_WIDTH : MINI_RAIL_WIDTH
+      void window.api.appWindow.setPlayerMini(true, width).catch(() => {})
+    } else if (miniApplied.current) {
+      miniApplied.current = false
       void window.api.appWindow.setPlayerMini(false).catch(() => {})
     }
+  }, [playerMini, hostWidget])
+
+  // The full and mini players are mutually exclusive: when the site leaves its
+  // compact mode, drop any glued widget so the main screen returns to the full
+  // player with the tool rail on the right.
+  useEffect(() => {
+    if (!playerMini) setHostWidget(null)
   }, [playerMini])
 
   const expand = () => {
@@ -297,11 +318,14 @@ function App() {
 
   const openPlayer = useCallback(() => {
     setCompact(false)
+    setHostWidget(null)
     setView({ kind: 'player' })
     if (!playerStarted) {
       setPlayerStarted(true)
       void window.api.artistwave.attach().catch(() => {})
     }
+    // Opening the full player always closes the mini player.
+    void window.api.artistwave.setMini(false).catch(() => {})
   }, [playerStarted])
 
   const closePlayer = useCallback(() => {
@@ -332,6 +356,49 @@ function App() {
     setCompact(false)
     setView({ kind: 'tool', id })
   }
+
+  // Open a widget glued beside the mini player (Mode A). The existing tool
+  // component renders as-is; only the surrounding layout changes.
+  const openHostWidget = useCallback(
+    (id: string) => {
+      const tool = allTools.find((item) => item.id === id)
+      if (tool?.fullPage) {
+        openPlayer()
+        return
+      }
+      setCompact(false)
+      setHostWidget(id)
+      setView({ kind: 'player' })
+      if (!playerStarted) {
+        setPlayerStarted(true)
+        void window.api.artistwave.attach().catch(() => {})
+      }
+      void window.api.artistwave.setMini(true).catch(() => {})
+    },
+    [allTools, openPlayer, playerStarted]
+  )
+
+  const closeHostWidget = useCallback(() => setHostWidget(null), [])
+
+  const exitToDashboard = useCallback(() => {
+    setHostWidget(null)
+    setCompact(false)
+    setView({ kind: 'home' })
+    void window.api.artistwave.setMini(false).catch(() => {})
+  }, [])
+
+  const hostTool = hostWidget ? allTools.find((tool) => tool.id === hostWidget) : undefined
+  const hostActive = playerMini && Boolean(hostTool)
+  const showRail = playerStarted && (playerMini || view.kind === 'player')
+  const playerVisible = playerStarted && (playerMini || view.kind === 'player')
+  const bodyMode = hostActive
+    ? 'mode-host'
+    : view.kind === 'player' && !playerMini
+      ? 'mode-full'
+      : playerMini
+        ? 'mode-mini'
+        : 'mode-normal'
+  const screenHidden = bodyMode === 'mode-full' || bodyMode === 'mode-mini'
 
   const toggleTool = (id: string) => {
     setDisabled((current) =>
@@ -419,58 +486,85 @@ function App() {
             </div>
           </header>
 
-          <main className={`content ${view.kind === 'player' ? 'content-player' : ''}`}>
+          <div className={`app-body ${bodyMode}`}>
+            <main
+              className={`content ${screenHidden ? 'screen-hidden' : ''} ${hostActive ? 'content-host' : ''}`}
+            >
+              {hostActive && hostTool ? (
+                <div className="host-screen">
+                  <ToolPage tool={hostTool} onBack={closeHostWidget} />
+                </div>
+              ) : (
+                view.kind !== 'player' && (
+                  <>
+                    {view.kind === 'home' && (
+                      <Home
+                        tools={pageTools}
+                        loading={!userToolsLoaded}
+                        cardSize={cardSize}
+                        page={homePage}
+                        counts={pageCounts}
+                        version={appVersion}
+                        onCardSize={setCardSize}
+                        onPage={setHomePage}
+                        onOpen={openTool}
+                        onManage={() => setView({ kind: 'settings' })}
+                      />
+                    )}
+
+                    {view.kind === 'settings' && (
+                      <Settings
+                        tools={allTools}
+                        disabled={disabled}
+                        onToggle={toggleTool}
+                        onBack={() => setView({ kind: 'home' })}
+                        userToolErrors={userToolErrors}
+                        onRefreshUserTools={loadUserTools}
+                        version={appVersion}
+                        updateSource={updateSource}
+                        update={update}
+                        onUpdateSource={setUpdateSource}
+                        onCheckUpdates={() => void checkUpdates(updateSource)}
+                        onOpenUpdate={openUpdate}
+                      />
+                    )}
+
+                    {view.kind === 'tool' &&
+                      (activeTool ? (
+                        <ToolPage tool={activeTool} onBack={() => setView({ kind: 'home' })} />
+                      ) : (
+                        <MissingTool onBack={() => setView({ kind: 'home' })} />
+                      ))}
+                  </>
+                )
+              )}
+            </main>
+
+            {showRail && (
+              <ToolRail
+                tools={visibleTools}
+                activeId={hostActive ? hostWidget : view.kind === 'player' ? 'artistwave' : null}
+                pinned={pinned}
+                onTogglePin={() => setPinned((value) => !value)}
+                onOpen={openHostWidget}
+                onManage={() => {
+                  setHostWidget(null)
+                  setCompact(false)
+                  setView({ kind: 'settings' })
+                  void window.api.artistwave.setMini(false).catch(() => {})
+                }}
+                onExpand={exitToDashboard}
+              />
+            )}
+
             {playerStarted && (
               <ArtistWavePage
-                visible={view.kind === 'player'}
+                visible={playerVisible}
                 onHide={() => setView({ kind: 'home' })}
                 onStop={closePlayer}
               />
             )}
-
-            {view.kind !== 'player' && (
-              <>
-                {view.kind === 'home' && (
-                  <Home
-                    tools={pageTools}
-                    loading={!userToolsLoaded}
-                    cardSize={cardSize}
-                    page={homePage}
-                    counts={pageCounts}
-                    version={appVersion}
-                    onCardSize={setCardSize}
-                    onPage={setHomePage}
-                    onOpen={openTool}
-                    onManage={() => setView({ kind: 'settings' })}
-                  />
-                )}
-
-                {view.kind === 'settings' && (
-                  <Settings
-                    tools={allTools}
-                    disabled={disabled}
-                    onToggle={toggleTool}
-                    onBack={() => setView({ kind: 'home' })}
-                    userToolErrors={userToolErrors}
-                    onRefreshUserTools={loadUserTools}
-                    version={appVersion}
-                    updateSource={updateSource}
-                    update={update}
-                    onUpdateSource={setUpdateSource}
-                    onCheckUpdates={() => void checkUpdates(updateSource)}
-                    onOpenUpdate={openUpdate}
-                  />
-                )}
-
-                {view.kind === 'tool' &&
-                  (activeTool ? (
-                    <ToolPage tool={activeTool} onBack={() => setView({ kind: 'home' })} />
-                  ) : (
-                    <MissingTool onBack={() => setView({ kind: 'home' })} />
-                  ))}
-              </>
-            )}
-          </main>
+          </div>
         </>
       )}
     </div>
@@ -550,6 +644,90 @@ function MiniBar({
         </button>
       </div>
     </div>
+  )
+}
+
+interface ToolRailProps {
+  tools: ToolDefinition[]
+  activeId: string | null
+  pinned: boolean
+  onTogglePin: () => void
+  onOpen: (id: string) => void
+  onManage: () => void
+  onExpand: () => void
+}
+
+/**
+ * Vertical widget toolbar glued beside the player. Same tools and icons as the
+ * horizontal mini bar — only the orientation changes. Picking a widget glues
+ * its existing screen beside the mini player; picking the player opens it full.
+ */
+function ToolRail({
+  tools: railTools,
+  activeId,
+  pinned,
+  onTogglePin,
+  onOpen,
+  onManage,
+  onExpand
+}: ToolRailProps) {
+  return (
+    <nav className="tool-rail" aria-label="Widgets">
+      <button
+        className="rail-brand"
+        onClick={onExpand}
+        title="Open dashboard"
+        aria-label="Open dashboard"
+      >
+        <span className="brand-mark small">T</span>
+      </button>
+
+      <div className="rail-tools">
+        {railTools.map((tool) => (
+          <button
+            key={tool.id}
+            className={`rail-tool ${activeId === tool.id ? 'active' : ''}`}
+            style={accentStyle(tool.accent)}
+            onClick={() => onOpen(tool.id)}
+            title={tool.name}
+            aria-label={tool.name}
+            aria-pressed={activeId === tool.id}
+          >
+            <Icon name={tool.icon} size={18} />
+          </button>
+        ))}
+      </div>
+
+      <span className="rail-divider" />
+
+      <div className="rail-actions">
+        <button
+          className={`rail-tool rail-pin ${pinned ? 'pinned' : ''}`}
+          onClick={onTogglePin}
+          title={pinned ? 'Unpin from top' : 'Keep on top'}
+          aria-label={pinned ? 'Unpin from top' : 'Keep on top'}
+          aria-pressed={pinned}
+        >
+          <Icon name="pin" size={17} />
+        </button>
+        <button
+          className="rail-tool"
+          onClick={onManage}
+          title="Manage tools"
+          aria-label="Manage tools"
+        >
+          <Icon name="settings" size={17} />
+        </button>
+        <button
+          className="rail-tool rail-expand"
+          onClick={onExpand}
+          title="Expand dashboard"
+          aria-label="Expand dashboard"
+        >
+          <Icon name="expand" size={17} />
+        </button>
+      </div>
+    </nav>
   )
 }
 

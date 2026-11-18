@@ -55,6 +55,7 @@ import {
   getArtistWaveStatus,
   isArtistWaveMiniUrl,
   requestArtistWaveMini,
+  setArtistWaveMini,
   setArtistWaveVisible,
   stopArtistWave
 } from './services/artistwave'
@@ -72,7 +73,7 @@ import {
 let restoreBounds: { bounds: Electron.Rectangle; maximized: boolean } | null = null
 let playerMiniRestore: { bounds: Electron.Rectangle; maximized: boolean } | null = null
 
-function setPlayerMiniWindow(window: BrowserWindow, active: boolean): void {
+function setPlayerMiniWindow(window: BrowserWindow, active: boolean, width?: unknown): void {
   if (active) {
     if (!playerMiniRestore) {
       playerMiniRestore = { bounds: window.getBounds(), maximized: window.isMaximized() }
@@ -81,15 +82,19 @@ function setPlayerMiniWindow(window: BrowserWindow, active: boolean): void {
 
     const display = screen.getDisplayMatching(window.getBounds())
     const work = display.workArea
-    const width = Math.min(380, work.width - 24)
+    // A plain mini player is narrow; the widget host glues a widget screen and
+    // a vertical tool rail beside it, so the renderer asks for a wider window.
+    const requested = typeof width === 'number' && Number.isFinite(width) ? width : 380
+    const host = requested > 480
+    const finalWidth = Math.min(Math.max(Math.round(requested), 320), work.width - 24)
     const height = Math.min(work.height, playerMiniRestore.bounds.height)
-    const x = Math.max(work.x, work.x + work.width - width - 26)
+    const x = Math.max(work.x, work.x + work.width - finalWidth - 26)
 
     window.setResizable(true)
     window.setMaximizable(false)
-    window.setMinimumSize(320, 480)
-    window.setBounds({ x, y: work.y, width, height })
-    window.setTitle('ArtistWave mini player')
+    window.setMinimumSize(host ? 560 : 320, 480)
+    window.setBounds({ x, y: work.y, width: finalWidth, height })
+    window.setTitle(host ? 'Toolbox widgets' : 'ArtistWave mini player')
     return
   }
 
@@ -144,10 +149,10 @@ function registerIpc(): void {
     setCompactWindow(window, compact === true, width)
   })
 
-  ipcMain.handle('window:set-player-mini', (event, active: unknown) => {
+  ipcMain.handle('window:set-player-mini', (event, active: unknown, width: unknown) => {
     const window = BrowserWindow.fromWebContents(event.sender)
     if (!window) return
-    setPlayerMiniWindow(window, active === true)
+    setPlayerMiniWindow(window, active === true, width)
   })
 
   ipcMain.handle('window:set-always-on-top', (event, value: unknown) => {
@@ -276,6 +281,7 @@ function registerIpc(): void {
   ipcMain.handle('artistwave:command', (_event, action: unknown, value: unknown) =>
     commandArtistWave(action, value)
   )
+  ipcMain.handle('artistwave:set-mini', (_event, active: unknown) => setArtistWaveMini(active))
 
   ipcMain.handle('updates:version', () => getAppVersion())
   ipcMain.handle('updates:check', (_event, source: unknown) => checkForUpdate(source))

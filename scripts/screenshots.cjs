@@ -210,6 +210,34 @@ async function main() {
   await delay(7000)
   await captureWindow('01h-artistwave')
 
+  // Mode B — full player with the vertical widget rail on the right.
+  await captureWindow('01h2-player-rail')
+
+  const clickRail = (label) =>
+    win.webContents.executeJavaScript(`(() => {
+      const btn = [...document.querySelectorAll('.rail-tool')].find(
+        (item) => item.getAttribute('aria-label') === ${JSON.stringify(label)}
+      )
+      if (!btn) return 'NO_RAIL_BUTTON'
+      btn.click()
+      return 'CLICKED'
+    })()`)
+
+  // Mode A — glue the Notes widget beside the mini player.
+  console.log('rail notes:', await clickRail('Quick notes'))
+  await delay(4000)
+  await captureWindow('01h3-host-notes')
+
+  // Mode A — swap the glued widget to Crypto watch (existing component as-is).
+  console.log('rail crypto:', await clickRail('Crypto watch'))
+  await delay(2500)
+  await captureWindow('01h4-host-crypto')
+
+  // Back to Mode B — opening the full player closes the mini player.
+  console.log('rail artistwave:', await clickRail('ArtistWave'))
+  await delay(2500)
+  await captureWindow('01h5-player-full-again')
+
   await win.webContents.executeJavaScript(`document.querySelector('.player-stop')?.click()`)
   await delay(400)
 

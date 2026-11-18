@@ -650,6 +650,78 @@ async function main() {
     await delay(400)
     result.playerClosed = Boolean(document.querySelector('.home'))
 
+    // Widget host: the rail glues a widget screen beside the compact player.
+    // The full and mini players must never be on screen at the same time.
+    await openCard('ArtistWave')
+    const waitForPlayer = async () => {
+      let latest = null
+      for (let attempt = 0; attempt < 30; attempt++) {
+        latest = await window.api.artistwave.status()
+        if (latest?.ready && !latest?.loading) return latest
+        await delay(500)
+      }
+      return latest
+    }
+    const railClick = async (label) => {
+      const button = [...document.querySelectorAll('.rail-tool, .rail-brand')].find(
+        (item) => item.getAttribute('aria-label') === label
+      )
+      if (!button) return false
+      button.click()
+      return true
+    }
+    const hostState = async () => {
+      const body = document.querySelector('.app-body')
+      const classes = body ? [...body.classList] : []
+      const artistwave = await window.api.artistwave.status()
+      return {
+        mode: classes.find((name) => name.indexOf('mode-') === 0) || 'unknown',
+        rail: Boolean(document.querySelector('.tool-rail')),
+        screen: Boolean(document.querySelector('.host-screen')),
+        screenTitle: document.querySelector('.host-screen .tool-page h1')?.textContent ?? '',
+        miniClass: Boolean(document.querySelector('.app-player-mini')),
+        mini: artistwave?.mini === true,
+        width: window.outerWidth
+      }
+    }
+
+    await waitForPlayer()
+    result.widgetHost = {
+      full: await hostState(),
+      openedNotes: false,
+      notes: null,
+      openedCrypto: false,
+      crypto: null,
+      backToFull: false,
+      fullAgain: null,
+      exclusive: true
+    }
+    result.widgetHost.exclusive =
+      result.widgetHost.full.mini === result.widgetHost.full.miniClass &&
+      result.widgetHost.full.screen === false
+
+    result.widgetHost.openedNotes = await railClick('Quick notes')
+    await delay(2000)
+    result.widgetHost.notes = await hostState()
+    result.widgetHost.exclusive =
+      result.widgetHost.exclusive &&
+      result.widgetHost.notes.mini === true &&
+      result.widgetHost.notes.miniClass === true &&
+      result.widgetHost.notes.screen === true
+
+    result.widgetHost.openedCrypto = await railClick('Crypto watch')
+    await delay(1500)
+    result.widgetHost.crypto = await hostState()
+
+    result.widgetHost.backToFull = await railClick('ArtistWave')
+    await delay(2000)
+    result.widgetHost.fullAgain = await hostState()
+
+    // Leave the dashboard reachable for the rest of the smoke run.
+    result.widgetHost.exitDashboard = await railClick('Open dashboard')
+    await delay(800)
+    result.widgetHost.homeAfter = Boolean(document.querySelector('.home'))
+
     await openCard('Bartender Aid')
     result.bartenderTool = Boolean(document.querySelector('.linked-tool.bartender-tool'))
     result.bartenderLaunch = Boolean(
@@ -1631,6 +1703,62 @@ async function main() {
     `ArtistWave accepted an unknown command: ${pagesUi.artistwaveMessage}`
   )
   expect(pagesUi.playerClosed, 'Stopping ArtistWave did not return to the dashboard')
+  expect(
+    pagesUi.widgetHost?.full?.mode === 'mode-full',
+    `ArtistWave reopened in ${pagesUi.widgetHost?.full?.mode}, expected mode-full`
+  )
+  expect(pagesUi.widgetHost?.full?.rail === true, 'full player is missing the tool rail')
+  expect(
+    pagesUi.widgetHost?.full?.mini === false && pagesUi.widgetHost?.full?.miniClass === false,
+    'full player reported a mini state'
+  )
+  expect(pagesUi.widgetHost?.openedNotes === true, 'Quick notes rail button was not found')
+  expect(
+    pagesUi.widgetHost?.notes?.mode === 'mode-host',
+    `glued notes ran in ${pagesUi.widgetHost?.notes?.mode}, expected mode-host`
+  )
+  expect(
+    pagesUi.widgetHost?.notes?.screenTitle === 'Quick notes',
+    `host screen title was "${pagesUi.widgetHost?.notes?.screenTitle}"`
+  )
+  expect(
+    pagesUi.widgetHost?.notes?.mini === true && pagesUi.widgetHost?.notes?.miniClass === true,
+    'glued widget did not switch the embedded player to mini'
+  )
+  expect(
+    pagesUi.widgetHost?.notes?.width >= 800,
+    `host window width was ${pagesUi.widgetHost?.notes?.width}`
+  )
+  expect(pagesUi.widgetHost?.openedCrypto === true, 'Crypto watch rail button was not found')
+  expect(
+    pagesUi.widgetHost?.crypto?.mode === 'mode-host',
+    `switching rail widgets left host mode (${pagesUi.widgetHost?.crypto?.mode})`
+  )
+  expect(
+    pagesUi.widgetHost?.crypto?.screenTitle === 'Crypto watch',
+    `crypto host title was "${pagesUi.widgetHost?.crypto?.screenTitle}"`
+  )
+  expect(pagesUi.widgetHost?.backToFull === true, 'ArtistWave rail button was not found')
+  expect(
+    pagesUi.widgetHost?.fullAgain?.mode === 'mode-full',
+    `returning to the player gave ${pagesUi.widgetHost?.fullAgain?.mode}`
+  )
+  expect(
+    pagesUi.widgetHost?.fullAgain?.screen === false,
+    'host screen stayed glued after returning to the full player'
+  )
+  expect(
+    pagesUi.widgetHost?.fullAgain?.mini === false &&
+      pagesUi.widgetHost?.fullAgain?.miniClass === false,
+    'mini player stayed on after returning to the full player'
+  )
+  expect(
+    pagesUi.widgetHost?.fullAgain?.width >= 900,
+    `full player window width was ${pagesUi.widgetHost?.fullAgain?.width}`
+  )
+  expect(pagesUi.widgetHost?.exclusive === true, 'full and mini player state disagreed')
+  expect(pagesUi.widgetHost?.exitDashboard === true, 'dashboard rail button was not found')
+  expect(pagesUi.widgetHost?.homeAfter === true, 'widget host did not return to the dashboard')
   expect(pagesUi.bartenderTool, 'Bartender Aid did not open')
   expect(pagesUi.bartenderLaunch, 'Bartender Aid is missing its load/refresh control')
   expect(pagesUi.bartenderCached, 'Bartender Aid did not restore the cached bar list')

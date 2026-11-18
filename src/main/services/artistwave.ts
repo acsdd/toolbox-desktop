@@ -321,6 +321,40 @@ export function requestArtistWaveMini(): void {
   }, 300)
 }
 
+/**
+ * Drive the site's compact player from the Toolbox widget host. `open()` asks
+ * for a popup, which the window-open handler denies, so ArtistWave falls back
+ * to its same-origin mini panel — one audio engine, no second stream.
+ * `closeFallback()` returns the page to the full player. The host uses this to
+ * keep the full and mini players mutually exclusive.
+ */
+export async function setArtistWaveMini(active: unknown): Promise<ArtistWaveStatus> {
+  const want = active === true
+  if (!attached || !host || host.isDestroyed()) return status
+  const frame = findFrame(host)
+  if (!frame) return status
+  const script = want
+    ? `(() => {
+        const host = window.ArtistWaveMiniHost
+        if (!host || typeof host.open !== 'function') return false
+        host.open()
+        return true
+      })()`
+    : `(() => {
+        const host = window.ArtistWaveMiniHost
+        if (!host || typeof host.closeFallback !== 'function') return false
+        host.closeFallback()
+        return true
+      })()`
+  try {
+    await frame.executeJavaScript(script, false)
+  } catch {
+    // The frame can disappear mid-switch; the next poll reconciles state.
+  }
+  await new Promise((resolve) => setTimeout(resolve, 140))
+  return poll()
+}
+
 export function detachArtistWave(): ArtistWaveStatus {
   attached = false
   host = null

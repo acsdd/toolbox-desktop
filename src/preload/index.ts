@@ -4,7 +4,7 @@ import type { ArtistWaveStatus, GitHubStatus, MailStatus, ToolboxApi } from '../
 const api: ToolboxApi = {
   appWindow: {
     setCompact: (compact, width) => ipcRenderer.invoke('window:set-compact', compact, width),
-    setPlayerMini: (active) => ipcRenderer.invoke('window:set-player-mini', active),
+    setPlayerMini: (active, width) => ipcRenderer.invoke('window:set-player-mini', active, width),
     setAlwaysOnTop: (value) => ipcRenderer.invoke('window:set-always-on-top', value)
   },
   clipboard: {
@@ -89,6 +89,7 @@ const api: ToolboxApi = {
     detach: () => ipcRenderer.invoke('artistwave:detach'),
     setVisible: (visible) => ipcRenderer.invoke('artistwave:set-visible', visible),
     command: (action, value) => ipcRenderer.invoke('artistwave:command', action, value),
+    setMini: (active) => ipcRenderer.invoke('artistwave:set-mini', active),
     onUpdate: (listener) => {
       const handler = (_event: Electron.IpcRendererEvent, payload: ArtistWaveStatus) =>
         listener(payload)
