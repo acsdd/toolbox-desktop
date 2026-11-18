@@ -20,6 +20,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      # The @toolbox/widgets dependency is a sibling checkout (symlinked by
+      # npm); its runtime deps must be present for the main build to resolve
+      # them from the package realpath. electron-vite bundles the core into
+      # out/main, so the installer stays self-contained.
+      - name: Fetch widget core
+        shell: bash
+        run: git clone https://github.com/acsdd/toolbox-widgets.git ../toolbox-widgets
+
+      - name: Install widget core deps
+        run: npm install --omit=dev
+        working-directory: ../toolbox-widgets
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22

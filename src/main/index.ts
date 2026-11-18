@@ -59,6 +59,19 @@ import {
   setArtistWaveVisible,
   stopArtistWave
 } from './services/artistwave'
+import {
+  getModelFarmCatalog,
+  getModelFarmDownloads,
+  getModelFarmQuants,
+  getModelFarmStatus,
+  installModelFarm,
+  loadModelFarmPrefs,
+  refreshModelFarm,
+  removeModelFarmModel,
+  scoreModelFarm,
+  searchModelFarm,
+  setModelFarmPrefs
+} from './services/model-farm'
 import { checkForUpdate, getAppVersion, openUpdatePage } from './services/updates'
 import {
   addShortcut,
@@ -283,6 +296,26 @@ function registerIpc(): void {
   )
   ipcMain.handle('artistwave:set-mini', (_event, active: unknown) => setArtistWaveMini(active))
 
+  ipcMain.handle('modelfarm:status', (_event, forceDetect: unknown) =>
+    getModelFarmStatus(forceDetect === true)
+  )
+  ipcMain.handle('modelfarm:catalog', (_event, forceRefresh: unknown) =>
+    getModelFarmCatalog(forceRefresh === true)
+  )
+  ipcMain.handle('modelfarm:score', (_event, input: unknown) => scoreModelFarm(input as never))
+  ipcMain.handle('modelfarm:search', (_event, query: unknown, scenario: unknown) =>
+    searchModelFarm(typeof query === 'string' ? query : '', scenario as never)
+  )
+  ipcMain.handle('modelfarm:quants', (_event, repo: unknown) =>
+    getModelFarmQuants(typeof repo === 'string' ? repo : '')
+  )
+  ipcMain.handle('modelfarm:prefs', () => loadModelFarmPrefs())
+  ipcMain.handle('modelfarm:set-prefs', (_event, input: unknown) => setModelFarmPrefs(input as never))
+  ipcMain.handle('modelfarm:install', (_event, input: unknown) => installModelFarm(input as never))
+  ipcMain.handle('modelfarm:remove', (_event, input: unknown) => removeModelFarmModel(input as never))
+  ipcMain.handle('modelfarm:downloads', () => getModelFarmDownloads())
+  ipcMain.handle('modelfarm:refresh', () => refreshModelFarm())
+
   ipcMain.handle('updates:version', () => getAppVersion())
   ipcMain.handle('updates:check', (_event, source: unknown) => checkForUpdate(source))
   ipcMain.handle('updates:open', (_event, url: unknown) => openUpdatePage(url))
@@ -354,6 +387,7 @@ app.whenReady().then(() => {
   void initMarkets()
   void initBartender()
   void initShortcuts()
+  void loadModelFarmPrefs()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

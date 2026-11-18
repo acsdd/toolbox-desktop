@@ -314,7 +314,13 @@ async function main() {
       return card.querySelector('h3')?.textContent ?? 'CLICKED'
     })()`)
     await delay(
-      clicked === 'System dashboard' ? 4600 : clicked === 'Clock & weather' ? 5000 : 900
+      clicked === 'System dashboard'
+        ? 4600
+        : clicked === 'Clock & weather'
+          ? 5000
+          : clicked === 'Model Farm'
+            ? 16000
+            : 900
     )
     const heading = await win.webContents.executeJavaScript(
       `document.querySelector('.tool-heading h1')?.textContent ?? document.querySelector('.hero h1')?.textContent ?? 'UNKNOWN'`

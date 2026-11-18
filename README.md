@@ -16,6 +16,7 @@ A local-first Windows toolbox in a single window. Notes, API keys, clipboard his
 - **Built-in update checker.** Point it at a GitHub repository or an HTTPS JSON manifest; it checks at startup and on demand, then opens the download page in your browser. Nothing installs silently.
 - **Crypto charts.** Watch up to eight coins and open 1, 3 or 6 months of price history, cached for 30 minutes.
 - **AI launchpad.** One-click tiles for ChatGPT, Claude, Gemini, Copilot, DeepSeek, GitHub and local model apps. Toolbox finds installed desktop clients in your Start Menu and opens the website otherwise; pick which presets you want and add your own links.
+- **Model Farm.** See which local AI models fit this PC: a live HuggingFace catalog scored against your RAM and VRAM, 0–100 setup grades that name the weak link, and one-click pulls into a local Ollama runtime.
 - **ArtistWave mini mode.** The embedded player's own mini-player button narrows Toolbox into a compact now-playing window instead of opening a browser popup.
 - **User tools.** Drop a folder with `manifest.json` and `index.js` into the tools directory to add your own local tool.
 
@@ -31,6 +32,7 @@ A local-first Windows toolbox in a single window. Notes, API keys, clipboard his
 | Encrypted backup | Bartender Aid |
 | Clock & weather | |
 | AI launchpad | |
+| Model Farm | |
 | Text stats | |
 
 Plus a compact mini bar, adjustable dashboard card sizes, and a persistent header clock with weather for any city.
@@ -52,6 +54,12 @@ Open a chart on any watchlist row for 1, 3 or 6 months of price history. Charts 
 Every preset — AI assistants, local model apps and developer tools such as GitHub and GitHub Copilot — is listed out of the box, but only the ones you pick show up as tiles. Toolbox scans your Start Menu shortcuts and launches an installed desktop client directly; anything else opens in your default browser. Custom links accept `http://` and `https://` only, including `http://localhost` for a local UI.
 
 <img src="docs/screenshots/launchpad.png" alt="AI launchpad with tiles for ChatGPT, Claude, Gemini, Copilot, DeepSeek, LM Studio, Ollama, GitHub and Cursor" width="720" />
+
+### Model Farm
+
+Open Model Farm to see this PC scored on memory, GPU, compute and storage, then browse the top HuggingFace GGUF models per skill — text generation, text to image, speech and more — each marked green, yellow or red against the memory free now or the whole machine. Every model carries a 0–100 setup grade that pairs your hardware against it on the same four axes and names the weakest link. Pick a quantization, optionally pin GPU layers, and pull it into a local Ollama runtime.
+
+<img src="docs/screenshots/model-farm.png" alt="Model Farm scoring this PC and listing local models that fit" width="720" />
 
 ## Download
 
@@ -83,9 +91,10 @@ The check runs silently at startup and whenever you press **Check now**. When a 
 
 ## Development
 
-Requires Node.js 22+ and npm.
+Requires Node.js 22+ and npm. The Model Farm feature uses the shared `@toolbox/widgets` core, which npm links from a sibling checkout — clone it next to this repository before installing:
 
 ```bash
+git clone https://github.com/acsdd/toolbox-widgets.git ../toolbox-widgets
 npm ci
 npm run dev          # electron-vite dev server
 npm run typecheck    # main, preload and renderer
@@ -130,6 +139,7 @@ Then open <http://localhost:8080>. Deployment notes, the GitHub Pages workflow a
 - The GitHub token is encrypted with `safeStorage` and never returned to the renderer.
 - The ArtistWave player loads its page from GitHub Pages; it receives no vault data.
 - The AI launchpad stores only preset ids and the custom names/links you add; it scans Start Menu shortcut names locally and opens links through the system browser.
+- Model Farm requests public HuggingFace catalog data and downloads the model you choose into your local Ollama runtime; the hardware profile and model list stay on this PC.
 - Update checks use HTTPS and include the app version in the user agent; the release provider receives normal connection details such as your IP address.
 
 ## License

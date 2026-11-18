@@ -1,5 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { ArtistWaveStatus, GitHubStatus, MailStatus, ToolboxApi } from '../shared/types'
+import type {
+  ArtistWaveStatus,
+  GitHubStatus,
+  MailStatus,
+  ModelFarmDownload,
+  ToolboxApi
+} from '../shared/types'
 
 const api: ToolboxApi = {
   appWindow: {
@@ -118,6 +124,25 @@ const api: ToolboxApi = {
     remove: (id) => ipcRenderer.invoke('shortcuts:remove', id),
     rescan: () => ipcRenderer.invoke('shortcuts:rescan'),
     open: (id) => ipcRenderer.invoke('shortcuts:open', id)
+  },
+  modelFarm: {
+    status: (forceDetect) => ipcRenderer.invoke('modelfarm:status', forceDetect),
+    catalog: (forceRefresh) => ipcRenderer.invoke('modelfarm:catalog', forceRefresh),
+    score: (input) => ipcRenderer.invoke('modelfarm:score', input),
+    search: (query, scenario) => ipcRenderer.invoke('modelfarm:search', query, scenario),
+    quants: (repo) => ipcRenderer.invoke('modelfarm:quants', repo),
+    prefs: () => ipcRenderer.invoke('modelfarm:prefs'),
+    setPrefs: (input) => ipcRenderer.invoke('modelfarm:set-prefs', input),
+    install: (input) => ipcRenderer.invoke('modelfarm:install', input),
+    remove: (input) => ipcRenderer.invoke('modelfarm:remove', input),
+    downloads: () => ipcRenderer.invoke('modelfarm:downloads'),
+    onProgress: (listener) => {
+      const handler = (_event: Electron.IpcRendererEvent, payload: ModelFarmDownload[]) =>
+        listener(payload)
+      ipcRenderer.on('modelfarm:progress', handler)
+      return () => ipcRenderer.removeListener('modelfarm:progress', handler)
+    },
+    refresh: () => ipcRenderer.invoke('modelfarm:refresh')
   },
   platform: process.platform
 }

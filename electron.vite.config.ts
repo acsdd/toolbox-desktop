@@ -4,7 +4,12 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [
+      // Bundle the shared widget core instead of externalizing it: the desktop
+      // package ships `out/**/*` only, so a node_modules dependency would be
+      // missing at runtime (and the workspace link would leak into the ASAR).
+      externalizeDepsPlugin({ exclude: ['@toolbox/widgets'] })
+    ]
   },
   preload: {
     plugins: [externalizeDepsPlugin()]

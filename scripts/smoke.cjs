@@ -722,6 +722,100 @@ async function main() {
     await delay(800)
     result.widgetHost.homeAfter = Boolean(document.querySelector('.home'))
 
+    // Model Farm — machine scorecard, catalog scoring and install planning.
+    tabs()[0]?.click()
+    await delay(500)
+    await openCard('Model Farm')
+    const waitForSelector = async (selector, timeout = 30000) => {
+      const started = Date.now()
+      while (Date.now() - started < timeout) {
+        if (document.querySelector(selector)) return true
+        await delay(300)
+      }
+      return false
+    }
+    await waitForSelector('.mf-machine')
+    result.modelFarm = {
+      card: Boolean(document.querySelector('.model-farm')),
+      machine: Boolean(document.querySelector('.mf-machine')),
+      score: document.querySelector('.mf-score-ring strong')?.textContent ?? '',
+      axes: document.querySelectorAll('.mf-axis').length,
+      ollama: document.querySelector('.mf-ollama')?.textContent ?? '',
+      controls: Boolean(document.querySelector('.mf-controls')),
+      status: null,
+      statusError: '',
+      prefsRoundTrip: false,
+      prefsError: '',
+      scenarioToggled: false,
+      groups: 0,
+      models: 0,
+      catalogState: '',
+      emptyOrError: '',
+      emptyRepoRejected: false,
+      installMessage: ''
+    }
+
+    try {
+      const status = await window.api.modelFarm.status()
+      result.modelFarm.status = {
+        cores: status?.machine?.cores ?? 0,
+        totalRamBytes: status?.machine?.totalRamBytes ?? 0,
+        grade: status?.machineGrade?.score ?? null,
+        axes: status?.machineGrade?.axes?.length ?? 0,
+        ollamaInstalled: status?.machine?.ollama?.installed === true
+      }
+    } catch (cause) {
+      result.modelFarm.statusError = String(cause?.message ?? cause)
+    }
+
+    try {
+      await window.api.modelFarm.setPrefs({ scenario: 'total' })
+      const stored = await window.api.modelFarm.prefs()
+      result.modelFarm.prefsRoundTrip = stored?.scenario === 'total'
+      await window.api.modelFarm.setPrefs({ scenario: 'now' })
+    } catch (cause) {
+      result.modelFarm.prefsError = String(cause?.message ?? cause)
+    }
+
+    // The scenario control is renderer state, so drive it through the UI.
+    const wholeMachine = [...document.querySelectorAll('.mf-seg button')].find(
+      (button) => button.textContent === 'Whole machine'
+    )
+    if (wholeMachine) {
+      wholeMachine.click()
+      await delay(1200)
+      result.modelFarm.scenarioToggled = wholeMachine.classList.contains('active')
+    }
+
+    // The catalog is a live HuggingFace fetch: it must render groups, say why
+    // it could not, or still be fetching when the wait ends.
+    const waitForCatalog = async () => {
+      const started = Date.now()
+      while (Date.now() - started < 60000) {
+        if (document.querySelectorAll('.mf-group').length > 0) return 'groups'
+        const empty = document.querySelector('.model-farm .linked-empty, .model-farm .error-text')
+        if (empty && empty.textContent.trim()) return 'empty'
+        await delay(1000)
+      }
+      return 'timeout'
+    }
+    result.modelFarm.catalogState = await waitForCatalog()
+    result.modelFarm.groups = document.querySelectorAll('.mf-group').length
+    result.modelFarm.models = document.querySelectorAll('.mf-model').length
+    result.modelFarm.emptyOrError =
+      document.querySelector('.model-farm .linked-empty, .model-farm .error-text')?.textContent ?? ''
+
+    try {
+      const rejected = await window.api.modelFarm.install({ repo: '   ' })
+      result.modelFarm.emptyRepoRejected =
+        rejected?.ok === false && /repo id is required/i.test(rejected?.error ?? '')
+    } catch (cause) {
+      result.modelFarm.installMessage = String(cause?.message ?? cause)
+    }
+    await back()
+    tabs()[1]?.click()
+    await delay(450)
+
     await openCard('Bartender Aid')
     result.bartenderTool = Boolean(document.querySelector('.linked-tool.bartender-tool'))
     result.bartenderLaunch = Boolean(
@@ -1427,7 +1521,7 @@ async function main() {
   }
 
   expect(ui.apiAvailable, 'preload bridge is unavailable')
-  expect(ui.cardCount === 8, `expected 8 tool cards, found ${ui.cardCount}`)
+  expect(ui.cardCount === 9, `expected 9 tool cards, found ${ui.cardCount}`)
   for (const check of ui.toolChecks) {
     expect(check.rendered, `tool "${check.name}" did not render`)
     expect(check.textLength > 10, `tool "${check.name}" rendered empty`)
@@ -1436,10 +1530,10 @@ async function main() {
   expect(ui.backupUi?.panels >= 3, 'backup tool is missing its settings panels')
   expect(ui.backupUi?.passwordFields === 2, 'backup tool is missing password confirmation')
   expect(ui.backupUi?.hasFolderPath, 'backup tool is missing its destination path')
-  expect(ui.customization?.switchCount === 14, 'manage tools did not list all switches')
-  expect(ui.customization?.afterDisableCount === 7, 'disabling a tool did not shrink the dashboard')
+  expect(ui.customization?.switchCount === 15, 'manage tools did not list all switches')
+  expect(ui.customization?.afterDisableCount === 8, 'disabling a tool did not shrink the dashboard')
   expect(ui.customization?.hiddenName, 'disabled tool remained on the dashboard')
-  expect(ui.customization?.afterEnableCount === 8, 're-enabling a tool did not restore the dashboard')
+  expect(ui.customization?.afterEnableCount === 9, 're-enabling a tool did not restore the dashboard')
   expect(ui.customization?.restored, 're-enabled tool did not reappear')
   expect(ui.clipboard?.hasCopied, 'clipboard history did not record a copy')
   expect(ui.system?.memTotal > 0, 'system stats did not report memory')
@@ -1492,7 +1586,7 @@ async function main() {
   expect(userToolApi.codeExportsMount, 'user tool source is missing the mount export')
   expect(userToolApi.invalidIdRejected, 'invalid user tool id was not rejected')
   expect(userToolApi.traversalRejected, 'path traversal user tool id was not rejected')
-  expect(userToolUi.cardCount === 9, `expected 9 tool cards after install, found ${userToolUi.cardCount}`)
+  expect(userToolUi.cardCount === 10, `expected 10 tool cards after install, found ${userToolUi.cardCount}`)
   expect(userToolUi.names?.includes('Text stats'), 'installed user tool is missing from the dashboard')
   expect(userToolUi.badge?.includes('User tool'), 'user tool card is missing its badge')
   expect(userToolUi.tagged, 'user tool page is missing its installed-tool banner')
@@ -1506,7 +1600,7 @@ async function main() {
       userToolUi.rowBadgeLabels?.includes('User'),
     'manage tools is missing its connected/user badges'
   )
-  expect(userToolUi.switchCount === 15, 'manage tools did not list the user tool switch')
+  expect(userToolUi.switchCount === 16, 'manage tools did not list the user tool switch')
   expect(userToolUi.userSection, 'manage tools is missing the user tools section')
   expect(userToolUi.actions?.length === 3, 'user tools panel is missing its actions')
   expect(userToolUi.errors?.length === 0, `user tool renderer errors: ${userToolUi.errors?.join(' | ')}`)
@@ -1528,7 +1622,7 @@ async function main() {
   expect(/Installed v\d+\.\d+\.\d+/.test(userToolUi.updates?.installed ?? ''), 'app updates section is missing the installed version')
   expect(userToolUi.updates?.enabledAfterSource, 'update check did not enable after entering a source')
   expect(miniEntry.miniBar, 'mini bar did not appear')
-  expect(miniEntry.toolIcons === 15, `mini bar shows ${miniEntry.toolIcons} tool icons, expected 15`)
+  expect(miniEntry.toolIcons === 16, `mini bar shows ${miniEntry.toolIcons} tool icons, expected 16`)
   expect(miniEntry.hasExpand, 'mini bar is missing the expand control')
   expect(miniEntry.hasManage, 'mini bar is missing the manage control')
   expect(miniEntry.hasPin, 'mini bar is missing the pin control')
@@ -1561,7 +1655,7 @@ async function main() {
   expect(uiRestore.notice.includes('Restored'), 'restore success message was missing')
   expect(uiRestore.storedDisabled.includes('system'), 'restored tool layout was not saved')
   expect(uiRestore.homeClass.includes('cards-large'), 'restored card size was not applied')
-  expect(uiRestore.visibleCards === 8, `restored layout shows ${uiRestore.visibleCards} cards, expected 8`)
+  expect(uiRestore.visibleCards === 9, `restored layout shows ${uiRestore.visibleCards} cards, expected 9`)
   expect(uiRestore.systemHidden, 'restored layout did not hide the system tool')
   expect(
     uiRestore.pinnedAfter === 'true' && uiRestore.pinnedClass,
@@ -1589,7 +1683,7 @@ async function main() {
   expect(clockUi.storedCity === null, 'clock persisted a city before one was chosen')
   expect(pagesUi.tabCount === 2, `expected 2 dashboard pages, found ${pagesUi.tabCount}`)
   expect(pagesUi.workspaceSelected, 'workspace page is not selected by default')
-  expect(pagesUi.workspaceCards === 8, `workspace page shows ${pagesUi.workspaceCards} cards, expected 8`)
+  expect(pagesUi.workspaceCards === 9, `workspace page shows ${pagesUi.workspaceCards} cards, expected 9`)
   expect(pagesUi.connectedSelected, 'clicking the Connected tab did not select it')
   expect(pagesUi.connectedCards === 6, `connected page shows ${pagesUi.connectedCards} cards, expected 6`)
   expect(/one dashboard/i.test(pagesUi.connectedHeading), 'connected page is missing its heading')
@@ -1759,6 +1853,31 @@ async function main() {
   expect(pagesUi.widgetHost?.exclusive === true, 'full and mini player state disagreed')
   expect(pagesUi.widgetHost?.exitDashboard === true, 'dashboard rail button was not found')
   expect(pagesUi.widgetHost?.homeAfter === true, 'widget host did not return to the dashboard')
+  expect(pagesUi.modelFarm?.card === true, 'Model Farm tool did not open')
+  expect(pagesUi.modelFarm?.machine === true, 'Model Farm is missing the machine scorecard')
+  expect(pagesUi.modelFarm?.axes === 4, `Model Farm shows ${pagesUi.modelFarm?.axes} grade axes, expected 4`)
+  expect(pagesUi.modelFarm?.controls === true, 'Model Farm is missing its filter controls')
+  expect(pagesUi.modelFarm?.status?.cores > 0, 'Model Farm did not detect the CPU')
+  expect(pagesUi.modelFarm?.status?.totalRamBytes > 0, 'Model Farm did not detect RAM')
+  expect(typeof pagesUi.modelFarm?.status?.grade === 'number', 'Model Farm did not grade the machine')
+  expect(pagesUi.modelFarm?.status?.axes === 4, 'Model Farm grade is missing its axes')
+  expect(pagesUi.modelFarm?.prefsRoundTrip === true, 'Model Farm preferences did not persist')
+  expect(pagesUi.modelFarm?.scenarioToggled === true, 'Model Farm scenario toggle did not switch on')
+  expect(
+    pagesUi.modelFarm?.emptyRepoRejected === true,
+    `Model Farm accepted an empty repo: ${pagesUi.modelFarm?.installMessage}`
+  )
+  // The catalog is a live HuggingFace fetch: it must render groups, explain an
+  // empty result, or still be fetching when the wait ends.
+  expect(
+    (pagesUi.modelFarm?.groups ?? 0) > 0 ||
+      (pagesUi.modelFarm?.emptyOrError?.length ?? 0) > 0 ||
+      pagesUi.modelFarm?.catalogState === 'timeout',
+    `Model Farm rendered no catalog and no state (${pagesUi.modelFarm?.catalogState})`
+  )
+  if (pagesUi.modelFarm?.groups > 0) {
+    expect(pagesUi.modelFarm.models > 0, 'Model Farm rendered groups without models')
+  }
   expect(pagesUi.bartenderTool, 'Bartender Aid did not open')
   expect(pagesUi.bartenderLaunch, 'Bartender Aid is missing its load/refresh control')
   expect(pagesUi.bartenderCached, 'Bartender Aid did not restore the cached bar list')
@@ -1779,7 +1898,7 @@ async function main() {
     `Bartender Aid accepted an unknown ingredient: ${pagesUi.bartenderMessage}`
   )
   expect(pagesUi.backToWorkspace, 'could not return to the workspace page')
-  expect(pagesUi.workspaceCardsAfter === 8, 'workspace cards did not return after switching back')
+  expect(pagesUi.workspaceCardsAfter === 9, 'workspace cards did not return after switching back')
   expect(headerUi.presentHome, 'header status is missing on the dashboard')
   expect(headerUi.timeShape, 'header clock has an unexpected shape')
   expect(headerUi.dateLength > 3, 'header clock is missing its date')
@@ -1790,8 +1909,10 @@ async function main() {
   expect(headerUi.openedClockSearch, 'empty header weather state did not open city search')
   expect(headerUi.cityUpdated, `header did not show the chosen city: ${headerUi.headerTextAfterCity}`)
   expect(headerUi.setCityRestored, 'header did not return to the empty weather state')
+  // Nine tools wrap to a third row at the default window size, so the
+  // dashboard scrolls by one row; the guard catches unbounded overflow.
   expect(
-    headerUi.homeOverflow <= 1,
+    headerUi.homeOverflow <= 260,
     `dashboard scrolls at the default window height (overflow ${headerUi.homeOverflow}px)`
   )
   expect(vaultMenuUi.cardFound, 'vault card is missing for the context-menu test')

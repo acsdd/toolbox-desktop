@@ -378,6 +378,223 @@ export interface ShortcutInput {
   url: string
 }
 
+// ---------------------------------------------------------------------
+// Model Farm — local model discovery, fit scoring and Ollama installs.
+// ---------------------------------------------------------------------
+
+export type ModelFarmScenario = 'now' | 'total'
+export type ModelFarmVerdict = 'green' | 'yellow' | 'red'
+export type ModelFarmFormat = 'gguf' | 'safetensors'
+export type ModelFarmTask =
+  | 'text-generation'
+  | 'text-to-image'
+  | 'text-to-speech'
+  | 'image-to-text'
+  | 'image-to-image'
+  | 'text-to-video'
+  | 'any-to-any'
+  | 'automatic-speech-recognition'
+
+export type ModelFarmGradeAxis = 'memory' | 'gpu' | 'compute' | 'storage'
+export type ModelFarmGradeLetter = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'
+
+export interface ModelFarmInstalledModel {
+  name: string
+  sizeBytes: number
+  modifiedAt: string | null
+}
+
+export interface ModelFarmGpu {
+  name: string
+  vramBytes: number
+}
+
+export interface ModelFarmOllama {
+  installed: boolean
+  url: string
+  models: ModelFarmInstalledModel[]
+  error: string | null
+}
+
+export interface ModelFarmMachine {
+  totalRamBytes: number
+  availableRamBytes: number
+  cores: number
+  gpus: ModelFarmGpu[]
+  freeDiskBytes: number | null
+  gpuProbe: 'ok' | 'unknown'
+  ollama: ModelFarmOllama
+  detectedAt: number
+}
+
+export interface ModelFarmAxisRating {
+  axis: ModelFarmGradeAxis
+  label: string
+  score: number | null
+  detail: string
+}
+
+export interface ModelFarmMachineGrade {
+  scenario: ModelFarmScenario
+  score: number
+  label: string
+  axes: ModelFarmAxisRating[]
+  weakest: ModelFarmAxisRating | null
+}
+
+export interface ModelFarmModel {
+  id: string
+  task: ModelFarmTask
+  label: string
+  author: string
+  formats: ModelFarmFormat[]
+  paramsBillions: number | null
+  quantLabel: string | null
+  fileBytes: number | null
+  runtimeRamBytes: number
+  downloads: number
+  likes: number
+  license: string | null
+  tags: string[]
+  hfUrl: string
+}
+
+export interface ModelFarmAxisFit extends ModelFarmAxisRating {
+  model: number
+  headroom: number | null
+  fit: number | null
+  modelDetail: string
+}
+
+export interface ModelFarmBottleneck {
+  axis: ModelFarmGradeAxis
+  label: string
+  kind: 'machine' | 'model'
+  message: string
+  advice: string
+}
+
+export interface ModelFarmSetupGrade {
+  scenario: ModelFarmScenario
+  score: number
+  letter: ModelFarmGradeLetter
+  label: string
+  machineScore: number
+  modelScore: number
+  axes: ModelFarmAxisFit[]
+  bottleneck: ModelFarmBottleneck
+}
+
+export interface ModelFarmScoredModel extends ModelFarmModel {
+  verdict: ModelFarmVerdict
+  fitsNow: boolean
+  fitsTotal: boolean
+  reason: string
+  hints: string[]
+  grade: ModelFarmSetupGrade
+  /** Installed local name, or null when the runtime does not serve it. */
+  installed: string | null
+}
+
+export interface ModelFarmGroup {
+  task: ModelFarmTask
+  label: string
+  icon: string
+  models: ModelFarmScoredModel[]
+}
+
+export interface ModelFarmScoreResult {
+  machine: ModelFarmMachine
+  machineGrade: ModelFarmMachineGrade
+  scenario: ModelFarmScenario
+  groups: ModelFarmGroup[]
+  total: number
+  fetchedAt: number | null
+  error: string | null
+}
+
+export interface ModelFarmStatus {
+  machine: ModelFarmMachine
+  machineGrade: ModelFarmMachineGrade
+}
+
+export interface ModelFarmCatalogResult {
+  models: ModelFarmModel[]
+  fetchedAt: number | null
+  error: string | null
+}
+
+export interface ModelFarmScoreInput {
+  scenario: ModelFarmScenario
+  search?: string
+  minParams?: number | null
+  maxParams?: number | null
+  onlyReachable?: boolean
+}
+
+export interface ModelFarmPrefs {
+  scenario: ModelFarmScenario
+  taskFilter: string
+  minParams: number | null
+  maxParams: number | null
+  showReds: boolean
+}
+
+export type ModelFarmPrefsInput = Partial<ModelFarmPrefs>
+
+export interface ModelFarmQuant {
+  quant: string | null
+  filename: string
+  sizeBytes: number
+}
+
+export interface ModelFarmQuantsResult {
+  repo: string
+  quants: ModelFarmQuant[]
+  error: string | null
+}
+
+export type ModelFarmDownloadStatus = 'downloading' | 'done' | 'error'
+
+export interface ModelFarmDownload {
+  id: string
+  repo: string
+  model: string
+  reference: string
+  quant: string | null
+  status: ModelFarmDownloadStatus
+  output: string
+  error: string | null
+}
+
+export interface ModelFarmInstallInput {
+  repo: string
+  quant?: string | null
+  numGpu?: number | null
+}
+
+export interface ModelFarmInstallResult {
+  ok: boolean
+  repo: string
+  model: string
+  reference: string
+  status: ModelFarmDownloadStatus
+  output: string
+  error: string | null
+}
+
+export interface ModelFarmRemoveInput {
+  model?: string
+  repo?: string
+}
+
+export interface ModelFarmRemoveResult {
+  ok: boolean
+  removed: string | null
+  message: string
+  output: string
+}
+
 export interface ToolboxApi {
   appWindow: {
     setCompact(compact: boolean, width?: number): Promise<void>
@@ -482,6 +699,20 @@ export interface ToolboxApi {
     remove(id: string): Promise<ShortcutStatus>
     rescan(): Promise<ShortcutStatus>
     open(id: string): Promise<'app' | 'link'>
+  }
+  modelFarm: {
+    status(forceDetect?: boolean): Promise<ModelFarmStatus>
+    catalog(forceRefresh?: boolean): Promise<ModelFarmCatalogResult>
+    score(input: ModelFarmScoreInput): Promise<ModelFarmScoreResult>
+    search(query: string, scenario?: ModelFarmScenario): Promise<ModelFarmScoreResult>
+    quants(repo: string): Promise<ModelFarmQuantsResult>
+    prefs(): Promise<ModelFarmPrefs>
+    setPrefs(input: ModelFarmPrefsInput): Promise<ModelFarmPrefs>
+    install(input: ModelFarmInstallInput): Promise<ModelFarmInstallResult>
+    remove(input: ModelFarmRemoveInput): Promise<ModelFarmRemoveResult>
+    downloads(): Promise<ModelFarmDownload[]>
+    onProgress(listener: (downloads: ModelFarmDownload[]) => void): () => void
+    refresh(): Promise<ModelFarmStatus>
   }
   platform: string
 }
