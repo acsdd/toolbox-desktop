@@ -595,7 +595,27 @@ export interface ModelFarmRemoveResult {
   output: string
 }
 
+export interface DiagnosticCheck { kind: 'dns' | 'tcp' | 'http'; target: string; port?: number }
+export interface DiagnosticResult { ok: boolean; detail: string; durationMs: number; checkedAt: number }
+export interface IncidentSnapshot { summary: string; events: string; createdAt: number }
+
+export interface ProjectStatus { name:string; path:string; branch:string; changes:number | null; ahead:number | null; behind:number | null; remoteUrl:string; error:string }
+
+export interface ToolboxReminder { id:string; name:string; dueAt:number; repeat:'none' | 'daily' | 'weekly'; done:boolean }
+
+export interface DiskScan {path:string;name:string;entries:{name:string;bytes:number}[];totalBytes:number;skipped:number;truncated:boolean;scannedAt:number}
+
+export interface ServiceSnapshot {takenAt:number;services:{name:string;status:string;startType:string}[]}
+
+export interface AiEndpointResult {ok:boolean;models:string[];durationMs:number;error:string}
+
 export interface ToolboxApi {
+  aiMonitor: { check(input:{kind:'ollama'|'lmstudio';url:string}): Promise<AiEndpointResult> }
+  configuration: { services(names:string): Promise<ServiceSnapshot> }
+  diskExplorer: { pickFolder(): Promise<string | null>; scan(path:string): Promise<DiskScan>; capacity(path:string): Promise<{total:number;free:number}> }
+  reminders: { list(): Promise<ToolboxReminder[]>; add(input: {name:string;dueAt:number;repeat:ToolboxReminder['repeat']}): Promise<ToolboxReminder[]>; remove(id:string): Promise<ToolboxReminder[]> }
+  projects: { pickFolder(): Promise<string | null>; list(path:string): Promise<ProjectStatus[]>; fetch(path:string): Promise<void> }
+  diagnostics: { run(input: DiagnosticCheck): Promise<DiagnosticResult>; incident(includeEvents: boolean): Promise<IncidentSnapshot>; emailDraft(input: {recipient: string; subject: string; body: string}): Promise<void>; sendEmail(input: {recipient: string; subject: string; body: string}): Promise<{recipient:string}> }
   appWindow: {
     setCompact(compact: boolean, width?: number): Promise<void>
     setPlayerMini(active: boolean, width?: number): Promise<void>
@@ -686,6 +706,7 @@ export interface ToolboxApi {
     list(destination: string): Promise<BackupPreview[]>
     create(input: BackupCreateInput): Promise<BackupCreateResult>
     restore(input: BackupRestoreInput): Promise<BackupRestoreResult>
+    verify(input: BackupRestoreInput): Promise<{fileName:string;secretCount:number;createdAt:number}>
   }
   updates: {
     version(): Promise<string>

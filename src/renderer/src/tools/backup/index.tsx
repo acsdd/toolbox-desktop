@@ -34,9 +34,10 @@ function BackupTool() {
   const [secretCount, setSecretCount] = useState<number | null>(null)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [busy, setBusy] = useState<'create' | 'restore' | 'folder' | null>(null)
+  const [busy, setBusy] = useState<'create' | 'restore' | 'verify' | 'folder' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [lastVerified, setLastVerified] = useState<{file:string;at:number} | null>(() => { try { const value = JSON.parse(localStorage.getItem('toolbox.backup-last-verified') || 'null'); return value && typeof value.file === 'string' && typeof value.at === 'number' ? value : null } catch { return null } })
   const [restoreFile, setRestoreFile] = useState<string | null>(null)
   const [restorePassword, setRestorePassword] = useState('')
   const [confirmRestore, setConfirmRestore] = useState(false)
@@ -179,6 +180,17 @@ function BackupTool() {
     setError(null)
   }
 
+  const verifyBackup = async () => {
+    if (!restoreFile || !restorePassword) { setError('Choose a backup and enter its password.'); return }
+    setBusy('verify');setError(null);setNotice(null)
+    try {
+      const result = await window.api.backup.verify({file:restoreFile,password:restorePassword})
+      setNotice(`Test restore succeeded for ${result.fileName}: ${result.secretCount} secrets were written and checked in a temporary vault. Your current vault was not changed.`)
+      const verified={file:result.fileName,at:Date.now()};setLastVerified(verified)
+      try { localStorage.setItem('toolbox.backup-last-verified', JSON.stringify(verified)) } catch {}
+    } catch(cause) { setError(errorMessage(cause)) } finally { setBusy(null) }
+  }
+
   const restoreBackup = async () => {
     if (!restoreFile) return
     if (!restorePassword) {
@@ -239,6 +251,7 @@ function BackupTool() {
         written. Point the folder at Google Drive, OneDrive, or Dropbox to sync it to your account.
       </p>
 
+      {lastVerified && <p className="hint">Last verified: {lastVerified.file} · {formatDate(lastVerified.at)}</p>}
       {error && <p className="error-text">{error}</p>}
       {notice && <div className="result-banner">{notice}</div>}
 
@@ -437,6 +450,9 @@ function BackupTool() {
             <div className="form-actions">
               <button className="ghost-button" onClick={cancelRestore}>
                 Cancel
+              </button>
+              <button type="button" className="ghost-button" disabled={busy !== null || !restorePassword} onClick={() => void verifyBackup()}>
+                {busy === 'verify' ? 'Verifying…' : 'Verify without restoring'}
               </button>
               <button
                 className={`primary-button ${confirmRestore ? 'danger-button' : ''}`}

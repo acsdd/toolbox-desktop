@@ -1,5 +1,11 @@
 import { app, BrowserWindow, dialog, ipcMain, screen, shell } from 'electron'
 import { join } from 'node:path'
+import { runDiagnostic, collectIncident } from './services/diagnostics'
+import { listProjects, fetchProject } from './services/projects'
+import { scanDisk, storageCapacity } from './services/disk-explorer'
+import { snapshotServices } from './services/configuration'
+import { inspectAiEndpoint } from './services/ai-monitor'
+import { initReminders, listReminders, addReminder, removeReminder, stopReminders } from './services/reminders'
 import { clipboardHistory } from './services/clipboard-history'
 import { getProcesses, getSystemStats } from './services/system-info'
 import { listFiles, organizeFolder } from './services/file-organizer'
@@ -9,7 +15,8 @@ import {
   listBackupLocations,
   listBackups,
   openBackupFolder,
-  restoreBackup
+  restoreBackup,
+  verifyBackup
 } from './services/backup'
 import {
   getUserToolCode,
@@ -25,6 +32,7 @@ import {
   getMailStatus,
   initMail,
   setMailNotifications,
+  sendIncidentEmail,
   stopMail
 } from './services/mail'
 import {
@@ -156,6 +164,32 @@ function setCompactWindow(window: BrowserWindow, compact: boolean, width: unknow
 }
 
 function registerIpc(): void {
+  ipcMain.handle('ai-monitor:check', (_event, input:unknown) => inspectAiEndpoint(input))
+  ipcMain.handle('configuration:services', (_event, names:unknown) => snapshotServices(names))
+  ipcMain.handle('disk-explorer:pick-folder', async () => {const result=await dialog.showOpenDialog({title:'Choose a folder to inspect',properties:['openDirectory']});return result.canceled?null:(result.filePaths[0]??null)})
+  ipcMain.handle('disk-explorer:scan', (_event, path:unknown) => scanDisk(path))
+  ipcMain.handle('disk-explorer:capacity', (_event, path:unknown) => storageCapacity(path))
+  ipcMain.handle('reminders:list', () => listReminders())
+  ipcMain.handle('reminders:add', (_event, input:unknown) => addReminder(input))
+  ipcMain.handle('reminders:remove', (_event, id:unknown) => removeReminder(id))
+  ipcMain.handle('projects:pick-folder', async () => { const result = await dialog.showOpenDialog({title:'Choose a project or projects folder',properties:['openDirectory']}); return result.canceled ? null : (result.filePaths[0] ?? null) })
+  ipcMain.handle('projects:list', (_event, path: unknown) => listProjects(path))
+  ipcMain.handle('projects:fetch', (_event, path: unknown) => fetchProject(path))
+  ipcMain.handle('diagnostics:run', (_event, input: unknown) => runDiagnostic(input))
+  ipcMain.handle('diagnostics:incident', (_event, includeEvents: unknown) => collectIncident(includeEvents === true))
+  ipcMain.handle('diagnostics:send-email', (_event, input: unknown) => sendIncidentEmail(input))
+  ipcMain.handle('diagnostics:email-draft', async (_event, value: unknown) => {
+    if (!value || typeof value !== 'object') throw new Error('Enter a destination and report.')
+    const input = value as {recipient?: unknown; subject?: unknown; body?: unknown}
+    const recipient = typeof input.recipient === 'string' ? input.recipient.trim() : ''
+    const subject = typeof input.subject === 'string' ? input.subject.trim().slice(0,150) : ''
+    const body = typeof input.body === 'string' ? input.body.slice(0,12000) : ''
+    if (!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(recipient) || recipient.length > 254) throw new Error('Enter a valid email address.')
+    if (!subject || !body) throw new Error('Enter a subject and report before opening the email draft.')
+    const draft = 'mailto:' + recipient + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body)
+    if (draft.length > 1900) throw new Error('This report is too long for an email draft. Shorten it or send via connected Gmail.')
+    await shell.openExternal(draft)
+  })
   ipcMain.handle('window:set-compact', (event, compact: unknown, width: unknown) => {
     const window = BrowserWindow.fromWebContents(event.sender)
     if (!window) return
@@ -239,6 +273,7 @@ function registerIpc(): void {
   ipcMain.handle('backup:list', (_event, destination: unknown) => listBackups(destination))
   ipcMain.handle('backup:create', (_event, input: unknown) => createBackup(input))
   ipcMain.handle('backup:restore', (_event, input: unknown) => restoreBackup(input))
+  ipcMain.handle('backup:verify', (_event, input: unknown) => verifyBackup(input))
 
   ipcMain.handle('weather:search', (_event, query: unknown) => searchWeatherCities(query))
   ipcMain.handle('weather:current', (_event, city: unknown) => getCurrentWeather(city))
@@ -387,6 +422,7 @@ app.whenReady().then(() => {
   void initMarkets()
   void initBartender()
   void initShortcuts()
+  void initReminders().catch(() => {})
   void loadModelFarmPrefs()
 
   app.on('activate', () => {
@@ -399,6 +435,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  stopReminders()
   clipboardHistory.stop()
   stopMail()
   stopGitHub()

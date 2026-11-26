@@ -11,7 +11,7 @@ import type {
   BackupRestoreInput,
   BackupRestoreResult
 } from '../../shared/types'
-import { exportSecretValues, replaceSecretValues } from './vault'
+import { exportSecretValues, replaceSecretValues, verifySecretValues } from './vault'
 import type { VaultExportEntry } from './vault'
 import { APP_VERSION } from '../version'
 
@@ -349,4 +349,19 @@ export async function restoreBackup(input: unknown): Promise<BackupRestoreResult
     secretCount,
     config: payload.config
   }
+}
+
+/** Rehearse the vault restore in a temporary location without changing the current vault. */
+export async function verifyBackup(input: unknown): Promise<{fileName:string;secretCount:number;createdAt:number}> {
+  if (!input || typeof input !== 'object') throw new Error('Invalid backup verification request.')
+  const request = input as Partial<BackupRestoreInput>
+  const password = requirePassword(request.password, 1)
+  if (typeof request.file !== 'string' || !request.file.trim()) throw new Error('Choose a backup file to verify.')
+  const file = resolve(request.file)
+  const info = await stat(file).catch(() => null)
+  if (!info || !info.isFile()) throw new Error('That backup file no longer exists.')
+  if (info.size > MAX_BACKUP_BYTES) throw new Error('That backup file is too large.')
+  const payload = await decryptPayload(await readFile(file), password)
+  const secretCount = await verifySecretValues(payload.secrets)
+  return {fileName:basename(file),secretCount,createdAt:payload.createdAt}
 }

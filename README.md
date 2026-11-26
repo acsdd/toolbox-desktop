@@ -61,6 +61,17 @@ Open Model Farm to see this PC scored on memory, GPU, compute and storage, then 
 
 <img src="docs/screenshots/model-farm.png" alt="Model Farm scoring this PC and listing local models that fit" width="720" />
 
+### Diagnostics and practical widgets
+
+- **Network & services** runs saved DNS, TCP and HTTP checks only when requested, and keeps the previous result for comparison.
+- **Incident report** prepares an editable report locally. Windows System errors are optional; review them before sharing. Save support destinations and either open an email draft or confirm a direct send through the Gmail account connected in Gmail announcer. Drafts may require shortening for the mail application; direct Gmail sends support longer reports.
+- **Projects & Git** reads a selected project folder or its immediate repositories using the Git library included with Toolbox. It never fetches automatically; an explicit confirmed fetch supports HTTPS remotes without embedded credentials. Upstream counts use locally stored history and may be unavailable for long or missing history.
+- **Encrypted backup** can verify the password and rehearse a vault restore to a temporary encrypted file without replacing your current vault. It reads the file back and checks its secrets, then deletes it. Layout restoration is not tested. It records the last verification locally.
+- **Timers & reminders** notify while Toolbox is running and check overdue reminders when it starts.
+- **Disk space explorer** reads sizes only, skips links, and limits a scan to 50,000 entries. Partial scans are identified and are not saved as comparison baselines.
+- **Service changes** compares selected Windows services with a locally saved baseline. **Personal runbooks** are local text checklists; they do not execute commands.
+- **Local AI services** checks configured Ollama and LM Studio endpoints and shows their reported models. **NAS companion** checks standard DSM, Navidrome and Plex ports and a mounted share's capacity; its recent alerts are Toolbox check results, not DSM alerts.
+
 ## Download
 
 Grab the latest Windows x64 build from [Releases](https://github.com/acsdd/toolbox-desktop/releases/latest):

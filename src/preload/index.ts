@@ -8,6 +8,12 @@ import type {
 } from '../shared/types'
 
 const api: ToolboxApi = {
+  aiMonitor: {check:input=>ipcRenderer.invoke('ai-monitor:check',input)},
+  configuration: { services:names=>ipcRenderer.invoke('configuration:services',names) },
+  diskExplorer: {pickFolder:()=>ipcRenderer.invoke('disk-explorer:pick-folder'),scan:path=>ipcRenderer.invoke('disk-explorer:scan',path),capacity:path=>ipcRenderer.invoke('disk-explorer:capacity',path)},
+  reminders: {list:()=>ipcRenderer.invoke('reminders:list'),add:input=>ipcRenderer.invoke('reminders:add',input),remove:id=>ipcRenderer.invoke('reminders:remove',id)},
+  projects: { pickFolder: () => ipcRenderer.invoke('projects:pick-folder'), list: path => ipcRenderer.invoke('projects:list', path), fetch:path => ipcRenderer.invoke('projects:fetch',path) },
+  diagnostics: { run: input => ipcRenderer.invoke('diagnostics:run', input), incident: includeEvents => ipcRenderer.invoke('diagnostics:incident', includeEvents), emailDraft: input => ipcRenderer.invoke('diagnostics:email-draft', input), sendEmail: input => ipcRenderer.invoke('diagnostics:send-email', input) },
   appWindow: {
     setCompact: (compact, width) => ipcRenderer.invoke('window:set-compact', compact, width),
     setPlayerMini: (active, width) => ipcRenderer.invoke('window:set-player-mini', active, width),
@@ -110,7 +116,8 @@ const api: ToolboxApi = {
     openFolder: (path) => ipcRenderer.invoke('backup:open-folder', path),
     list: (destination) => ipcRenderer.invoke('backup:list', destination),
     create: (input) => ipcRenderer.invoke('backup:create', input),
-    restore: (input) => ipcRenderer.invoke('backup:restore', input)
+    restore: (input) => ipcRenderer.invoke('backup:restore', input),
+    verify: (input) => ipcRenderer.invoke('backup:verify', input)
   },
   updates: {
     version: () => ipcRenderer.invoke('updates:version'),

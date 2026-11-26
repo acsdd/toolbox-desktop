@@ -1,6 +1,7 @@
 import { app, safeStorage } from 'electron'
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
+import { tmpdir } from 'node:os'
 import { randomUUID } from 'node:crypto'
 import type { VaultEntry, VaultInput } from '../../shared/types'
 import { clipboardHistory } from './clipboard-history'
@@ -61,10 +62,13 @@ async function load(): Promise<VaultFile> {
   return cache
 }
 
-async function persist(data: VaultFile): Promise<void> {
-  const target = vaultPath()
+async function writeVault(target: string, data: VaultFile): Promise<void> {
   await mkdir(dirname(target), { recursive: true })
   await writeFile(target, JSON.stringify(data, null, 2), { encoding: 'utf8', mode: 0o600 })
+}
+
+async function persist(data: VaultFile): Promise<void> {
+  await writeVault(vaultPath(), data)
   cache = data
 }
 
@@ -188,7 +192,7 @@ export async function exportSecretValues(): Promise<VaultExportEntry[]> {
  * Replaces the local vault with secrets from a backup. Entries are re-encrypted
  * with this machine's Windows DPAPI key, so a backup stays portable across PCs.
  */
-export async function replaceSecretValues(input: unknown): Promise<number> {
+async function prepareSecretValues(input: unknown): Promise<StoredEntry[]> {
   await requireEncryption()
 
   if (!Array.isArray(input)) throw new Error('The backup secrets are malformed.')
@@ -232,6 +236,33 @@ export async function replaceSecretValues(input: unknown): Promise<number> {
       secret: (await safeStorage.encryptStringAsync(source.value)).toString('base64')
     })
   }
+
+  return entries
+}
+
+export async function verifySecretValues(input: unknown): Promise<number> {
+  const entries = await prepareSecretValues(input)
+  const source = input as VaultExportEntry[]
+  const directory = await mkdtemp(join(tmpdir(), 'toolbox-restore-check-'))
+  try {
+    const file = join(directory, 'vault.json')
+    await writeVault(file, { version: 1, entries })
+    const restored: unknown = JSON.parse(await readFile(file, 'utf8'))
+    if (!restored || typeof restored !== 'object' || (restored as VaultFile).version !== 1 || !Array.isArray((restored as VaultFile).entries)) throw new Error('The test restore could not be read.')
+    const readEntries = (restored as VaultFile).entries
+    if (readEntries.length !== entries.length || !readEntries.every(isStoredEntry)) throw new Error('The test restore is incomplete.')
+    for (let index = 0; index < readEntries.length; index++) {
+      const decoded = await safeStorage.decryptStringAsync(Buffer.from(readEntries[index].secret, 'base64'))
+      if (decoded.result !== source[index].value || readEntries[index].id !== entries[index].id || readEntries[index].name !== entries[index].name || readEntries[index].notes !== entries[index].notes || readEntries[index].updatedAt !== entries[index].updatedAt) throw new Error('Could not verify the test restore.')
+    }
+    return readEntries.length
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+}
+
+export async function replaceSecretValues(input: unknown): Promise<number> {
+  const entries = await prepareSecretValues(input)
 
   // Keep a local safety copy of the previous vault before replacing it.
   try {

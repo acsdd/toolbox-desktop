@@ -2,6 +2,7 @@ import { app, BrowserWindow, safeStorage } from 'electron'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { ImapFlow } from 'imapflow'
+import nodemailer from 'nodemailer'
 import type { MailMessageSummary, MailSetup, MailStatus } from '../../shared/types'
 import { showDesktopNotification } from './notify'
 
@@ -437,4 +438,24 @@ export async function setMailNotifications(enabled: unknown): Promise<MailStatus
 
 export function stopMail(): void {
   stopPolling()
+}
+
+/** Send only a user-reviewed plaintext report using the connected Gmail account. */
+export async function sendIncidentEmail(input: unknown): Promise<{recipient:string}> {
+  await loadAccount()
+  if (!state.account || !state.password) throw new Error('Connect Gmail in Gmail announcer before sending, or open an email draft instead.')
+  if (!input || typeof input !== 'object') throw new Error('Enter a destination and report.')
+  const value = input as {recipient?:unknown;subject?:unknown;body?:unknown}
+  const recipient = typeof value.recipient === 'string' ? value.recipient.trim() : ''
+  const subject = typeof value.subject === 'string' ? value.subject.trim() : ''
+  const body = typeof value.body === 'string' ? value.body : ''
+  if (!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(recipient) || recipient.length > 254) throw new Error('Enter a valid email address.')
+  if (!subject || subject.length > 150 || /[\r\n]/.test(subject) || !body || body.length > 12000) throw new Error('Enter a subject and report within the size limits.')
+  const transport=nodemailer.createTransport({host:'smtp.gmail.com',port:465,secure:true,auth:{user:state.account.email,pass:state.password},connectionTimeout:15000,greetingTimeout:15000,socketTimeout:20000,disableFileAccess:true,disableUrlAccess:true})
+  try {
+    const result=await transport.sendMail({from:state.account.email,to:recipient,subject,text:body})
+    if (!result.accepted.length) throw new Error('The mail server did not accept the report.')
+    return {recipient}
+  } catch { throw new Error('Could not send the report through Gmail. Check the account connection and try again.') }
+  finally {transport.close()}
 }

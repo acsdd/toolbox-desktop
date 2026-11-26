@@ -64,7 +64,7 @@ export function HeaderStatus({ onOpen }: HeaderStatusProps) {
       type="button"
       className="header-status"
       onClick={onOpen}
-      title="Open Clock & weather"
+      title="Open Clock weather"
       aria-label={`${time}, ${date}. ${weatherSummary}. Open Clock & weather.`}
     >
       <span className="header-clock">
