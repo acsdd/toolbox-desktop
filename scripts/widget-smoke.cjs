@@ -4,6 +4,13 @@ app.setPath('userData',fs.mkdtempSync(path.join(os.tmpdir(),'toolbox-widgets-tes
 let draft='';shell.openExternal=async url=>{draft=url};
 const backupDir=fs.mkdtempSync(path.join(os.tmpdir(),'toolbox-verify-test-'));
 const {execFileSync}=require('node:child_process');
+const originalFetch=global.fetch;let healthCheck=0;
+global.fetch=(url,options)=>String(url)==='http://127.0.0.1:18787/health' ? Promise.resolve(new Response(JSON.stringify([
+ {service:'toolbox-router',mode:'mock',ok:true},
+ {service:'toolbox-router',mode:'bridge',ok:true,mcp:{ready:true,toolCount:35}},
+ {service:'toolbox-router',mode:'bridge',ok:false,mcp:{ready:false,toolCount:0}},
+ {service:'unexpected',mode:'bridge',ok:true}
+][healthCheck++]),{status:200})) : originalFetch(url,options);
 const childProcess=require('node:child_process'),originalExecFile=childProcess.execFile;
 let eventCheck=0;
 childProcess.execFile=function(file,args,options,callback){
@@ -23,6 +30,10 @@ app.whenReady().then(async()=>{await new Promise(resolve=>server.listen(0,'127.0
  for(let i=0;i<150;i++){w=BrowserWindow.getAllWindows().find(win=>!win.isDestroyed());if(w&&!w.webContents.isLoading())break;await wait(100)}if(!w)throw Error('Main window not found');await wait(600);
  const result=await w.webContents.executeJavaScript(`(async()=>{
    const dns=await window.api.diagnostics.run({kind:'dns',target:'localhost'});
+   const integrationMock=await window.api.integration.status();
+   const integrationReady=await window.api.integration.status();
+   const integrationDegraded=await window.api.integration.status();
+   const integrationInvalid=await window.api.integration.status();
    const tcp=await window.api.diagnostics.run({kind:'tcp',target:'127.0.0.1',port:${port}});
    const http=await window.api.diagnostics.run({kind:'http',target:'http://127.0.0.1:${port}/'});
    const unavailable=await window.api.diagnostics.run({kind:'http',target:'http://127.0.0.1:${port}/bad'});
@@ -46,8 +57,8 @@ app.whenReady().then(async()=>{await new Promise(resolve=>server.listen(0,'127.0
    const verified=await window.api.backup.verify({file:backup.file,password:'test-backup-passphrase'});
    let wrong=false;try{await window.api.backup.verify({file:backup.file,password:'wrong-passphrase'})}catch{wrong=true}
    let corrupt=false;try{await window.api.backup.verify({file:${JSON.stringify(corruptBackup)},password:'test-backup-passphrase'})}catch{corrupt=true}
-   const after=await window.api.vault.list();return {dns,tcp,http,unavailable,aiOllama,aiStudio,incident,emptyEvents,listedEvents,deniedEvents,projects,rejectedFetch,disk,capacity,services,reminders,removed,verified,wrong,corrupt,vaultUnchanged:after.length===before.length+1};
+   const after=await window.api.vault.list();return {dns,integrationMock,integrationReady,integrationDegraded,integrationInvalid,tcp,http,unavailable,aiOllama,aiStudio,incident,emptyEvents,listedEvents,deniedEvents,projects,rejectedFetch,disk,capacity,services,reminders,removed,verified,wrong,corrupt,vaultUnchanged:after.length===before.length+1};
  })()`);
- assert.equal(result.dns.ok,true);assert.equal(result.tcp.ok,true);assert.equal(result.http.ok,true);assert.equal(result.unavailable.ok,false);assert.deepEqual(result.aiOllama.models,['test-loaded']);assert.deepEqual(result.aiStudio.models,['test-available']);assert.match(result.incident.summary,/OS:/);assert.equal(result.incident.events,'Not included.');assert.equal(result.emptyEvents.events,'No recent System errors found.');assert.match(result.listedEvents.events,/Event 42/);assert.match(result.deniedEvents.events,/Unable to read/);assert.equal(result.projects.length,1);assert.equal(result.projects[0].changes,2);assert.equal(result.rejectedFetch,true);assert.equal(result.disk.totalBytes,17);assert.equal(result.disk.truncated,false);assert.ok(result.capacity.total>0);assert.equal(result.services.services[0].status,'Not found');assert.ok(result.reminders.some(item=>item.name==='Synthetic reminder'));assert.ok(!result.removed.some(item=>item.name==='Synthetic reminder'));assert.equal(result.verified.secretCount,1);assert.equal(result.vaultUnchanged,true);assert.equal(result.wrong,true);assert.equal(result.corrupt,true);assert.ok(draft.startsWith('mailto:support@example.invalid?'));assert.ok(draft.includes('Synthetic%20test'));
+ assert.equal(result.integrationMock.router,'mock');assert.equal(result.integrationReady.router,'ready');assert.equal(result.integrationReady.toolCount,35);assert.equal(result.integrationDegraded.router,'degraded');assert.equal(result.integrationInvalid.router,'invalid');assert.equal(result.dns.ok,true);assert.equal(result.tcp.ok,true);assert.equal(result.http.ok,true);assert.equal(result.unavailable.ok,false);assert.deepEqual(result.aiOllama.models,['test-loaded']);assert.deepEqual(result.aiStudio.models,['test-available']);assert.match(result.incident.summary,/OS:/);assert.equal(result.incident.events,'Not included.');assert.equal(result.emptyEvents.events,'No recent System errors found.');assert.match(result.listedEvents.events,/Event 42/);assert.match(result.deniedEvents.events,/Unable to read/);assert.equal(result.projects.length,1);assert.equal(result.projects[0].changes,2);assert.equal(result.rejectedFetch,true);assert.equal(result.disk.totalBytes,17);assert.equal(result.disk.truncated,false);assert.ok(result.capacity.total>0);assert.equal(result.services.services[0].status,'Not found');assert.ok(result.reminders.some(item=>item.name==='Synthetic reminder'));assert.ok(!result.removed.some(item=>item.name==='Synthetic reminder'));assert.equal(result.verified.secretCount,1);assert.equal(result.vaultUnchanged,true);assert.equal(result.wrong,true);assert.equal(result.corrupt,true);assert.ok(draft.startsWith('mailto:support@example.invalid?'));assert.ok(draft.includes('Synthetic%20test'));
  console.log('WIDGET SMOKE PASSED: DNS, TCP, HTTP, project status, disk scan, reminders, incident draft and backup verification');server.close();app.quit();
 }).catch(error=>{console.error(error);server.close();app.exit(1)});setTimeout(()=>{console.error('Widget smoke timed out');server.close();app.exit(1)},40000);

@@ -597,6 +597,7 @@ export interface ModelFarmRemoveResult {
 
 export interface DiagnosticCheck { kind: 'dns' | 'tcp' | 'http'; target: string; port?: number }
 export interface DiagnosticResult { ok: boolean; detail: string; durationMs: number; checkedAt: number }
+export interface IntegrationStatus { gatewayReachable: boolean; router: 'unavailable' | 'invalid' | 'mock' | 'ready' | 'degraded'; toolCount: number | null; checkedAt: number }
 export interface IncidentSnapshot { summary: string; events: string; createdAt: number }
 
 export interface ProjectStatus { name:string; path:string; branch:string; changes:number | null; ahead:number | null; behind:number | null; remoteUrl:string; error:string }
@@ -610,6 +611,7 @@ export interface ServiceSnapshot {takenAt:number;services:{name:string;status:st
 export interface AiEndpointResult {ok:boolean;models:string[];durationMs:number;error:string}
 
 export interface ToolboxApi {
+  integration: { status(): Promise<IntegrationStatus> }
   aiMonitor: { check(input:{kind:'ollama'|'lmstudio';url:string}): Promise<AiEndpointResult> }
   configuration: { services(names:string): Promise<ServiceSnapshot> }
   diskExplorer: { pickFolder(): Promise<string | null>; scan(path:string): Promise<DiskScan>; capacity(path:string): Promise<{total:number;free:number}> }

@@ -64,6 +64,7 @@ Open Model Farm to see this PC scored on memory, GPU, compute and storage, then 
 ### Diagnostics and practical widgets
 
 - **Network & services** runs saved DNS, TCP and HTTP checks only when requested, and keeps the previous result for comparison.
+- **Toolbox connections** checks the default local Router and AstrLink ports and reports the Router's MCP readiness. It does not read credentials or send a model request; a reachable gateway alone does not establish provider health.
 - **Incident report** prepares an editable report locally. Windows System errors are optional; review them before sharing. Save support destinations and either open an email draft or confirm a direct send through the Gmail account connected in Gmail announcer. Drafts may require shortening for the mail application; direct Gmail sends support longer reports.
 - **Projects & Git** reads a selected project folder or its immediate repositories using the Git library included with Toolbox. It never fetches automatically; an explicit confirmed fetch supports HTTPS remotes without embedded credentials. Upstream counts use locally stored history and may be unavailable for long or missing history.
 - **Encrypted backup** can verify the password and rehearse a vault restore to a temporary encrypted file without replacing your current vault. It reads the file back and checks its secrets, then deletes it. Layout restoration is not tested. It records the last verification locally.

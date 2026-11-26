@@ -5397,3 +5397,34 @@ code {
 }
 
 .diagnostic-tool{display:grid;gap:14px}.diagnostic-intro,.diagnostic-status{margin:0;color:var(--muted);line-height:1.6}.diagnostic-form{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.diagnostic-form label,.diagnostic-label{display:grid;gap:6px;flex:1 1 170px;color:var(--muted);font-size:12px;font-weight:600}.diagnostic-form input,.diagnostic-form select,.diagnostic-label textarea{width:100%;min-width:0;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--text);font:inherit}.diagnostic-label textarea{resize:vertical;line-height:1.5}.diagnostic-check{display:flex;align-items:center;gap:8px;color:var(--text);font-size:13px}.diagnostic-list{display:grid;gap:8px}.diagnostic-row{display:flex;align-items:center;gap:9px;padding:13px;border:1px solid var(--border);border-radius:10px;background:var(--panel-raised)}.diagnostic-row>div{flex:1;min-width:0}.diagnostic-row small{display:block;margin-top:4px;color:var(--muted);overflow-wrap:anywhere}.diagnostic-row p{margin:5px 0 0;font-size:12px;overflow-wrap:anywhere}.diagnostic-ok{color:#a7f3d0}@media(max-width:700px){.diagnostic-row{flex-wrap:wrap}.diagnostic-row>div{flex:1 0 100%}}
+
+/* ArtistWave-inspired suite themes. Each application keeps its own selection. */
+:root[data-theme="night"]{--bg:#0b1015;--panel:#101922;--panel-raised:#1b2a32;--border:#415960;--border-soft:#2c4148;--text:#eff5f4;--muted:#b0c6c4;--muted-2:#9eb5b2;--theme-accent:#b7f56b}
+:root[data-theme="day"]{color-scheme:light;--bg:#f5f8f0;--panel:#fffefa;--panel-raised:#e6f0e0;--border:#aac3ab;--border-soft:#cbdcc9;--text:#243f31;--muted:#47634d;--muted-2:#536f57;--theme-accent:#387542}
+:root[data-theme="bright-night"]{--bg:#202b34;--panel:#344550;--panel-raised:#415662;--border:#718b95;--border-soft:#597581;--text:#f4faff;--muted:#cfdee4;--muted-2:#bdd0d8;--theme-accent:#b7f56b}
+:root[data-theme="ocean"]{--bg:#102533;--panel:#173747;--panel-raised:#224957;--border:#5c8c97;--border-soft:#3d6674;--text:#f0fbff;--muted:#b6d7df;--muted-2:#a6cbd3;--theme-accent:#7fe5ec}
+:root[data-theme="plum"]{--bg:#281c30;--panel:#3a2a44;--panel-raised:#503c59;--border:#967aa0;--border-soft:#765d80;--text:#fff7ff;--muted:#e1c9e5;--muted-2:#d3bad8;--theme-accent:#f0baf5}
+:root[data-theme="bugs"]{--bg:#303941;--panel:#485762;--panel-raised:#586b77;--border:#8398a3;--border-soft:#6a808b;--text:#f8fbff;--muted:#d1dce1;--muted-2:#c0d0d7;--theme-accent:#ffad55}
+:root[data-theme="daffy"]{--bg:#1c2229;--panel:#343d47;--panel-raised:#48535e;--border:#877b70;--border-soft:#695f57;--text:#fff9ef;--muted:#e4d7c5;--muted-2:#d7c8b7;--theme-accent:#ffb258}
+:root[data-theme="tweety"]{--bg:#3b3215;--panel:#514822;--panel-raised:#675d2e;--border:#a49557;--border-soft:#837641;--text:#fffbed;--muted:#efe0aa;--muted-2:#dfd09d;--theme-accent:#ffdf5c}
+:root[data-theme="sylvester"]{--bg:#25272d;--panel:#3b3d44;--panel-raised:#50525a;--border:#97868a;--border-soft:#756a70;--text:#fffafa;--muted:#e2d8d9;--muted-2:#d4c8ca;--theme-accent:#ff8c94}
+:root[data-theme="taz"]{--bg:#34251d;--panel:#503b2d;--panel-raised:#684d39;--border:#a48a73;--border-soft:#826954;--text:#fff7ee;--muted:#e5d0bc;--muted-2:#d6c0ab;--theme-accent:#f5ad6d}
+:root[data-theme="roadrunner"]{--bg:#132d43;--panel:#1e4560;--panel-raised:#315c76;--border:#7199ac;--border-soft:#4f798e;--text:#f1faff;--muted:#c1dce9;--muted-2:#b2cfde;--theme-accent:#83dfff}
+:root[data-theme]{--accent:var(--theme-accent)}
+:root[data-theme] .app{background:radial-gradient(ellipse at 85% 0%,color-mix(in srgb,var(--theme-accent) 13%,transparent),transparent 48%),var(--bg)}
+:root[data-theme] .topbar,:root[data-theme] .mini-bar,:root[data-theme] .tool-rail{background:linear-gradient(160deg,color-mix(in srgb,var(--panel) 88%,white 12%),var(--panel));border-color:var(--border)}
+:root[data-theme] .tool-card{background:radial-gradient(ellipse at 100% 0%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 55%),linear-gradient(150deg,#ffffff18,transparent 55%),var(--panel)}
+:root[data-theme] :is(.tool-surface,.settings-list,.user-tools-panel,.updates-panel,.backup-panel,.linked-panel,.diagnostic-row){background:linear-gradient(150deg,#ffffff14,transparent 55%),var(--panel);border-color:var(--border)}
+:root[data-theme] :is(.home-switch button.active,.card-size-button.active){background:linear-gradient(150deg,#ffffff28,transparent),var(--panel-raised)}
+:root[data-theme] .brand-mark{background:linear-gradient(145deg,color-mix(in srgb,var(--theme-accent) 76%,white),var(--theme-accent));color:#12202a}
+:root[data-theme] .content::-webkit-scrollbar-thumb{background:var(--theme-accent);background-clip:content-box}
+:root[data-theme] :where(button,input,textarea,select,a):focus-visible{outline-color:var(--theme-accent)}
+.suite-theme{display:grid;gap:3px;min-width:126px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.06em}
+.suite-theme select{width:100%;min-height:34px;padding:5px 9px;border:1px solid var(--border);border-radius:8px;color:var(--text);background:linear-gradient(180deg,#ffffff18,transparent),var(--panel-raised);font:inherit;font-size:12px;letter-spacing:normal}
+:root[data-theme="day"] :is(.primary-button:not(.danger-button)){color:#fff;background-color:#387542}
+:root[data-theme="day"] :is(.tool-card,.tool-surface,.settings-list,.user-tools-panel,.updates-panel,.backup-panel,.linked-panel,.diagnostic-row){color:var(--text)}
+@media(max-width:800px){.suite-theme{min-width:98px}.topbar-actions{gap:6px}}
+:root[data-theme] .player-button{background:linear-gradient(160deg,#ffffff20,transparent),var(--panel-raised);color:var(--text);border-color:var(--border)}
+:root[data-theme] .player-button.active{color:var(--text);border-color:var(--theme-accent)}
+:root[data-theme="day"] .card-open{color:color-mix(in srgb,var(--accent) 50%,#19261e)}
+:root[data-theme="day"] .player-button.playing .player-button-sub{color:#285e46}

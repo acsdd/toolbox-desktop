@@ -27,6 +27,16 @@ import type { CardSize, HomePage } from './lib/preferences'
 import { relativeTime } from './lib/format'
 
 const BUILT_IN_IDS = tools.map((tool) => tool.id)
+const THEMES = [
+  ['night', 'Night'], ['day', 'Day'], ['bright-night', 'Bright Night'], ['ocean', 'Ocean'], ['plum', 'Plum'],
+  ['bugs', 'Bugs Bunny'], ['daffy', 'Daffy Duck'], ['tweety', 'Tweety'], ['sylvester', 'Sylvester'],
+  ['taz', 'Tasmanian Devil'], ['roadrunner', 'Road Runner']
+] as const
+const THEME_KEY = 'toolbox.appearance.theme'
+function readTheme(): string {
+  try { const saved = localStorage.getItem(THEME_KEY); return THEMES.some(([id]) => id === saved) ? saved! : 'night' }
+  catch { return 'night' }
+}
 
 // Widget host geometry: a vertical tool rail glued between the widget screen
 // and the player. The mini player and the host share one window-sizing channel.
@@ -98,6 +108,7 @@ function errorMessage(cause: unknown): string {
 }
 
 function App() {
+  const [theme, setTheme] = useState(readTheme)
   const [view, setView] = useState<View>({ kind: 'home' })
   const [playerStarted, setPlayerStarted] = useState(false)
   const [disabled, setDisabled] = useState<string[]>(loadDisabled)
@@ -120,6 +131,11 @@ function App() {
   const compactApplied = useRef(false)
   const miniSeen = useRef(false)
   const miniApplied = useRef(false)
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    try { localStorage.setItem(THEME_KEY, theme) } catch { /* Appearance remains available for this session. */ }
+  }, [theme])
 
   useEffect(() => {
     localStorage.setItem(DISABLED_KEY, JSON.stringify(disabled))
@@ -431,7 +447,6 @@ function App() {
                 <span className="brand-mark">T</span>
                 <span className="brand-text">
                   <strong>Toolbox</strong>
-                  <small>Customizable utilities for Windows</small>
                 </span>
               </button>
               <HeaderStatus onOpen={() => openTool('clock')} />
@@ -455,9 +470,7 @@ function App() {
             </div>
 
             <div className="topbar-actions">
-              <span className="tool-count">
-                {visibleTools.length} of {allTools.length} tools active
-              </span>
+              <label className="suite-theme"><span>Select theme</span><select aria-label="Color theme" value={theme} onChange={event => setTheme(event.target.value)}>{THEMES.map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
               <button
                 className="icon-button mini-toggle"
                 onClick={() => setCompact(true)}
@@ -799,8 +812,8 @@ function Home({
           </h1>
           <p className="hero-copy">
             {connected
-              ? 'Connect your accounts and services without leaving the desktop. Credentials are encrypted on this PC — you decide what connects.'
-              : 'Pick a tool and get to work. Your files stay on this PC. Connected tools contact the services you choose; Toolbox has no account or cloud sync.'}
+              ? 'Your connected accounts and services, managed on this PC.'
+              : 'Your local tools, ready when you need them.'}
           </p>
         </div>
         <div className="hero-actions">

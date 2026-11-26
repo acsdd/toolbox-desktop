@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, screen, shell } from 'electron'
 import { join } from 'node:path'
 import { runDiagnostic, collectIncident } from './services/diagnostics'
+import { integrationStatus } from './services/integration'
 import { listProjects, fetchProject } from './services/projects'
 import { scanDisk, storageCapacity } from './services/disk-explorer'
 import { snapshotServices } from './services/configuration'
@@ -164,6 +165,7 @@ function setCompactWindow(window: BrowserWindow, compact: boolean, width: unknow
 }
 
 function registerIpc(): void {
+  ipcMain.handle('integration:status', () => integrationStatus())
   ipcMain.handle('ai-monitor:check', (_event, input:unknown) => inspectAiEndpoint(input))
   ipcMain.handle('configuration:services', (_event, names:unknown) => snapshotServices(names))
   ipcMain.handle('disk-explorer:pick-folder', async () => {const result=await dialog.showOpenDialog({title:'Choose a folder to inspect',properties:['openDirectory']});return result.canceled?null:(result.filePaths[0]??null)})

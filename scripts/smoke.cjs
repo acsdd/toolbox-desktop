@@ -1521,7 +1521,7 @@ async function main() {
   }
 
   expect(ui.apiAvailable, 'preload bridge is unavailable')
-  expect(ui.cardCount === 18, `expected 18 tool cards, found ${ui.cardCount}`)
+  expect(ui.cardCount === 19, `expected 19 tool cards, found ${ui.cardCount}`)
   for (const check of ui.toolChecks) {
     expect(check.rendered, `tool "${check.name}" did not render`)
     expect(check.textLength > 10, `tool "${check.name}" rendered empty`)
@@ -1530,10 +1530,10 @@ async function main() {
   expect(ui.backupUi?.panels >= 3, 'backup tool is missing its settings panels')
   expect(ui.backupUi?.passwordFields === 2, 'backup tool is missing password confirmation')
   expect(ui.backupUi?.hasFolderPath, 'backup tool is missing its destination path')
-  expect(ui.customization?.switchCount === 24, 'manage tools did not list all switches')
-  expect(ui.customization?.afterDisableCount === 17, 'disabling a tool did not shrink the dashboard')
+  expect(ui.customization?.switchCount === 25, 'manage tools did not list all switches')
+  expect(ui.customization?.afterDisableCount === 18, 'disabling a tool did not shrink the dashboard')
   expect(ui.customization?.hiddenName, 'disabled tool remained on the dashboard')
-  expect(ui.customization?.afterEnableCount === 18, 're-enabling a tool did not restore the dashboard')
+  expect(ui.customization?.afterEnableCount === 19, 're-enabling a tool did not restore the dashboard')
   expect(ui.customization?.restored, 're-enabled tool did not reappear')
   expect(ui.clipboard?.hasCopied, 'clipboard history did not record a copy')
   expect(ui.system?.memTotal > 0, 'system stats did not report memory')
@@ -1655,7 +1655,7 @@ async function main() {
   expect(uiRestore.notice.includes('Restored'), 'restore success message was missing')
   expect(uiRestore.storedDisabled.includes('system'), 'restored tool layout was not saved')
   expect(uiRestore.homeClass.includes('cards-large'), 'restored card size was not applied')
-  expect(uiRestore.visibleCards === 18, `restored layout shows ${uiRestore.visibleCards} cards, expected 18`)
+  expect(uiRestore.visibleCards === 19, `restored layout shows ${uiRestore.visibleCards} cards, expected 19`)
   expect(uiRestore.systemHidden, 'restored layout did not hide the system tool')
   expect(
     uiRestore.pinnedAfter === 'true' && uiRestore.pinnedClass,
@@ -1683,7 +1683,7 @@ async function main() {
   expect(clockUi.storedCity === null, 'clock persisted a city before one was chosen')
   expect(pagesUi.tabCount === 2, `expected 2 dashboard pages, found ${pagesUi.tabCount}`)
   expect(pagesUi.workspaceSelected, 'workspace page is not selected by default')
-  expect(pagesUi.workspaceCards === 18, `workspace page shows ${pagesUi.workspaceCards} cards, expected 18`)
+  expect(pagesUi.workspaceCards === 19, `workspace page shows ${pagesUi.workspaceCards} cards, expected 19`)
   expect(pagesUi.connectedSelected, 'clicking the Connected tab did not select it')
   expect(pagesUi.connectedCards === 6, `connected page shows ${pagesUi.connectedCards} cards, expected 6`)
   expect(/one dashboard/i.test(pagesUi.connectedHeading), 'connected page is missing its heading')
@@ -1898,7 +1898,7 @@ async function main() {
     `Bartender Aid accepted an unknown ingredient: ${pagesUi.bartenderMessage}`
   )
   expect(pagesUi.backToWorkspace, 'could not return to the workspace page')
-  expect(pagesUi.workspaceCardsAfter === 18, 'workspace cards did not return after switching back')
+  expect(pagesUi.workspaceCardsAfter === 19, 'workspace cards did not return after switching back')
   expect(headerUi.presentHome, 'header status is missing on the dashboard')
   expect(headerUi.timeShape, 'header clock has an unexpected shape')
   expect(headerUi.dateLength > 3, 'header clock is missing its date')

@@ -8,6 +8,7 @@ import type {
 } from '../shared/types'
 
 const api: ToolboxApi = {
+  integration: {status:()=>ipcRenderer.invoke('integration:status')},
   aiMonitor: {check:input=>ipcRenderer.invoke('ai-monitor:check',input)},
   configuration: { services:names=>ipcRenderer.invoke('configuration:services',names) },
   diskExplorer: {pickFolder:()=>ipcRenderer.invoke('disk-explorer:pick-folder'),scan:path=>ipcRenderer.invoke('disk-explorer:scan',path),capacity:path=>ipcRenderer.invoke('disk-explorer:capacity',path)},
