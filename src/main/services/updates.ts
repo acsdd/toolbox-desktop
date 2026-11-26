@@ -1,4 +1,5 @@
-import { net, shell } from 'electron'
+import { shell } from 'electron'
+import { publicFetch } from './public-fetch'
 import type { UpdateCheckResult } from '../../shared/types'
 import { APP_VERSION } from '../version'
 
@@ -136,23 +137,24 @@ function trimNotes(value: unknown): string {
 }
 
 async function fetchDocument(url: string): Promise<{ payload: Record<string, unknown>; finalUrl: string }> {
-  let response: Response
-  try {
-    response = await net.fetch(url, {
-      headers: {
-        accept: 'application/vnd.github+json, application/json',
-        'user-agent': `Toolbox/${APP_VERSION}`
-      },
-      redirect: 'follow',
-      signal: AbortSignal.timeout(TIMEOUT_MS)
-    })
-  } catch (cause) {
-    const name = cause instanceof Error ? cause.name : ''
-    if (name === 'TimeoutError' || name === 'AbortError') {
-      throw new Error('The update check timed out. Try again in a moment.')
+  let response: Response | undefined
+  let current = assertPublicHttps(url, 'release source')
+  for (let hop=0; hop<5; hop++) {
+    try {
+      response = await publicFetch(current, { headers: { accept: 'application/vnd.github+json, application/json', 'user-agent': `Toolbox/${APP_VERSION}` }, signal: AbortSignal.timeout(TIMEOUT_MS) })
+    } catch (cause) {
+      const name = cause instanceof Error ? cause.name : ''
+      if (name === 'TimeoutError' || name === 'AbortError') throw new Error('The update check timed out. Try again in a moment.')
+      throw new Error('Could not reach the update server or the address is not public.')
     }
-    throw new Error('Could not reach the update server. Check your connection and try again.')
+    if (response.status < 300 || response.status >= 400) break
+    const location = response.headers.get('location')
+    await response.body?.cancel().catch(() => {})
+    if (!location) throw new Error('The update server redirected without a destination.')
+    current = assertPublicHttps(new URL(location, current).toString(), 'update redirect')
+    response = undefined
   }
+  if (!response) throw new Error('The update server redirected too many times.')
 
   if (response.status === 404) {
     throw new Error('No published releases were found for that source yet.')
@@ -164,15 +166,25 @@ async function fetchDocument(url: string): Promise<{ payload: Record<string, unk
     throw new Error(`The update check failed (HTTP ${response.status}).`)
   }
 
-  const finalUrl = assertPublicHttps(response.url || url, 'update response')
+  const finalUrl = current
   const declared = Number(response.headers.get('content-length') ?? '')
   if (Number.isFinite(declared) && declared > MAX_BYTES) {
     throw new Error('The update response is too large to inspect.')
   }
-  const text = await response.text()
-  if (text.length > MAX_BYTES) {
-    throw new Error('The update response is too large to inspect.')
+  const chunks: Buffer[] = []
+  let size = 0
+  const reader = response.body?.getReader()
+  if (reader) {
+    while (true) {
+      const {done, value} = await reader.read()
+      if (done) break
+      if (!value) continue
+      size += value.length
+      if (size > MAX_BYTES) { await reader.cancel().catch(() => {}); throw new Error('The update response is too large to inspect.') }
+      chunks.push(Buffer.from(value))
+    }
   }
+  const text = Buffer.concat(chunks).toString('utf8')
 
   let payload: unknown
   try {

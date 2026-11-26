@@ -1,3 +1,4 @@
+import { publicFetch } from './public-fetch'
 import { app, shell } from 'electron'
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
@@ -363,8 +364,7 @@ async function fetchFeed(url: string): Promise<ParsedFeed> {
   for (let hop = 0; hop < 4; hop += 1) {
     let response: Response
     try {
-      response = await fetch(current, {
-        redirect: 'manual',
+      response = await publicFetch(current, {
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
         headers: {
           'User-Agent': USER_AGENT,

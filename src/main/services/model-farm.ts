@@ -3,8 +3,8 @@ import { randomUUID } from 'node:crypto'
 import { execFile, spawn } from 'node:child_process'
 import { readFile, rm, statfs, writeFile } from 'node:fs/promises'
 import { mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { tmpdir, homedir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
 import {
   DEFAULT_CATALOG_TTL_MS,
   MODEL_TASKS,
@@ -432,7 +432,16 @@ export async function installModelFarm(input: ModelFarmInstallInput): Promise<Mo
     })
   }
 
-  const short = diskShortfall(await freeDiskBytes(app.getPath('userData')), neededBytes)
+  const modelDirectory = resolve(process.env.OLLAMA_MODELS || join(homedir(), '.ollama', 'models'))
+  let existingDirectory = modelDirectory
+  let available = await freeDiskBytes(existingDirectory)
+  while (available === null && dirname(existingDirectory) !== existingDirectory) {
+    existingDirectory = dirname(existingDirectory)
+    available = await freeDiskBytes(existingDirectory)
+  }
+  const diskWarning = available === null ? `Warning: Could not check free space for Ollama storage at ${modelDirectory}.\n` : ''
+  if (diskWarning) console.warn(diskWarning.trim())
+  const short = diskShortfall(available, neededBytes)
   if (short !== null && short > 0) {
     return failure(`Not enough disk for ${model.id}: ${diskShortfallLabel(short)}.`, {
       model: model.label,
@@ -447,7 +456,7 @@ export async function installModelFarm(input: ModelFarmInstallInput): Promise<Mo
     reference: plan.reference,
     quant: input.quant ?? model.quantLabel,
     status: 'downloading',
-    output: '',
+    output: diskWarning,
     error: null
   }
   state.downloads.push(entry)
@@ -459,12 +468,15 @@ export async function installModelFarm(input: ModelFarmInstallInput): Promise<Mo
     if (numGpu > 0) {
       const directory = mkdtempSync(join(tmpdir(), 'toolbox-modelfarm-'))
       const modelfilePath = join(directory, 'Modelfile')
-      writeFileSync(modelfilePath, buildModelfile(plan.reference, { numGpu }), 'utf8')
-      result = await runOllamaCommand(['create', plan.modelName, '--file', modelfilePath], {
-        spawnImpl,
-        onOutput: appendOutput
-      })
-      await rm(directory, { recursive: true, force: true }).catch(() => {})
+      try {
+        writeFileSync(modelfilePath, buildModelfile(plan.reference, { numGpu }), 'utf8')
+        result = await runOllamaCommand(['create', plan.modelName, '--file', modelfilePath], {
+          spawnImpl,
+          onOutput: appendOutput
+        })
+      } finally {
+        await rm(directory, { recursive: true, force: true }).catch((error) => console.warn('Could not clean temporary Modelfile:', error))
+      }
     } else {
       result = await pullIntoOllama(plan.reference, { spawnImpl, onOutput: appendOutput })
     }
