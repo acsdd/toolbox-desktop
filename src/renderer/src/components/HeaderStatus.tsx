@@ -4,6 +4,7 @@ import { describeWeather, useWeather, useWeatherCity } from '../lib/weather'
 
 interface HeaderStatusProps {
   onOpen: () => void
+  className?: string
 }
 
 function timeLabel(now: Date): string {
@@ -34,7 +35,7 @@ function dateLabel(now: Date): string {
  * Live time, date and weather beside the brand. It stays in the top bar on the
  * dashboard, settings and every tool page, and opens the Clock & weather tool.
  */
-export function HeaderStatus({ onOpen }: HeaderStatusProps) {
+export function HeaderStatus({ onOpen, className }: HeaderStatusProps) {
   const [now, setNow] = useState(() => new Date())
   const [city] = useWeatherCity()
   const { snapshot, busy, error } = useWeather(city)
@@ -62,7 +63,7 @@ export function HeaderStatus({ onOpen }: HeaderStatusProps) {
   return (
     <button
       type="button"
-      className="header-status"
+      className={`header-status${className ? ` ${className}` : ''}`}
       onClick={onOpen}
       title="Open Clock weather"
       aria-label={`${time}, ${date}. ${weatherSummary}. Open Clock & weather.`}

@@ -6,6 +6,8 @@ import { Icon } from './components/Icon'
 import type { IconName } from './components/Icon'
 import { HeaderStatus } from './components/HeaderStatus'
 import { PlayerButton } from './components/PlayerButton'
+import { TerminalView } from './components/TerminalView'
+import { ToolSidebar } from './components/ToolSidebar'
 import { tools } from './tools/registry'
 import type { ToolDefinition } from './tools/types'
 import { UserToolView } from './user-tools/UserToolView'
@@ -57,6 +59,7 @@ type View =
   | { kind: 'tool'; id: string }
   | { kind: 'settings' }
   | { kind: 'player' }
+  | { kind: 'terminal' }
 
 interface UpdateLookup {
   checking: boolean
@@ -344,6 +347,13 @@ function App() {
     void window.api.artistwave.setMini(false).catch(() => {})
   }, [playerStarted])
 
+  const openTerminal = useCallback(() => {
+    setCompact(false)
+    setHostWidget(null)
+    setView({ kind: 'terminal' })
+    void window.api.artistwave.setMini(false).catch(() => {})
+  }, [])
+
   const closePlayer = useCallback(() => {
     setPlayerStarted(false)
     setPlayerMini(false)
@@ -454,6 +464,19 @@ function App() {
                 active={view.kind === 'player'}
                 onToggle={() => (view.kind === 'player' ? setView({ kind: 'home' }) : openPlayer())}
               />
+              <button
+                className={`terminal-button ${view.kind === 'terminal' ? 'active' : ''}`}
+                onClick={() => (view.kind === 'terminal' ? setView({ kind: 'home' }) : openTerminal())}
+                aria-pressed={view.kind === 'terminal'}
+                title={view.kind === 'terminal' ? 'Close Terminal' : 'Open Terminal command bar'}
+                aria-label="Terminal"
+              >
+                <Icon name="terminal" size={18} />
+                <span className="player-button-copy">
+                  <span className="player-button-label">Terminal</span>
+                  <span className="player-button-sub">Command bar</span>
+                </span>
+              </button>
               {update.result?.available && (
                 <button
                   className="update-button"
@@ -500,13 +523,43 @@ function App() {
           </header>
 
           <div className={`app-body ${bodyMode}`}>
+            {bodyMode === 'mode-normal' && (
+              <ToolSidebar
+                tools={visibleTools}
+                activeId={
+                  view.kind === 'home'
+                    ? 'home'
+                    : view.kind === 'settings'
+                      ? 'settings'
+                      : view.kind === 'tool'
+                        ? view.id
+                        : null
+                }
+                onHome={exitToDashboard}
+                onManage={() => {
+                  setHostWidget(null)
+                  setView({ kind: 'settings' })
+                  void window.api.artistwave.setMini(false).catch(() => {})
+                }}
+                onOpen={openTool}
+              />
+            )}
+
             <main
-              className={`content ${screenHidden ? 'screen-hidden' : ''} ${hostActive ? 'content-host' : ''}`}
+              className={`content ${screenHidden ? 'screen-hidden' : ''} ${hostActive ? 'content-host' : ''} ${view.kind === 'terminal' ? 'content-terminal' : ''}`}
             >
               {hostActive && hostTool ? (
                 <div className="host-screen">
                   <ToolPage tool={hostTool} onBack={closeHostWidget} />
                 </div>
+              ) : view.kind === 'terminal' ? (
+                <TerminalView
+                  tools={visibleTools}
+                  onHome={exitToDashboard}
+                  onSettings={() => setView({ kind: 'settings' })}
+                  onOpenTool={openTool}
+                  onOpenClock={() => openTool('clock')}
+                />
               ) : (
                 view.kind !== 'player' && (
                   <>
@@ -1021,7 +1074,7 @@ function Settings({
           <label className="updates-field">
             <span>Release source</span>
             <input
-              type="url"
+              type="text"
               value={updateSource}
               onChange={(event) => onUpdateSource(event.target.value)}
               placeholder="owner/repo or https://example.com/update.json"

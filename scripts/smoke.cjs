@@ -1037,7 +1037,9 @@ async function main() {
       cityUpdated: false,
       headerTextAfterCity: '',
       setCityRestored: false,
-      homeOverflow: -1
+      homeOverflow: -1,
+      homeGridHeight: 0,
+      homeHorizontalOverflow: -1
     }
 
     document.querySelector('.settings-toggle')?.click()
@@ -1083,7 +1085,12 @@ async function main() {
     document.querySelectorAll('.card-size-button')[1]?.click()
     await delay(400)
     const content = document.querySelector('.content')
-    if (content) result.homeOverflow = content.scrollHeight - content.clientHeight
+    const grid = document.querySelector('.tool-grid')
+    if (content) {
+      result.homeOverflow = content.scrollHeight - content.clientHeight
+      result.homeHorizontalOverflow = content.scrollWidth - content.clientWidth
+    }
+    if (grid) result.homeGridHeight = grid.getBoundingClientRect().height
 
     return result
   })()`)
@@ -1282,10 +1289,12 @@ async function main() {
     result.updates = {
       section: Boolean(document.querySelector('.updates-panel')),
       field: Boolean(sourceInput),
+      sourceValue: sourceInput?.value ?? '',
       checkLabel: checkButton?.textContent?.trim() ?? '',
       checkDisabled: checkButton?.disabled ?? null,
       installed: document.querySelector('.updates-version')?.textContent?.trim() ?? '',
-      enabledAfterSource: false
+      enabledAfterSource: false,
+      disabledAfterClear: false
     }
     if (sourceInput && checkButton) {
       const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
@@ -1296,6 +1305,7 @@ async function main() {
       setter?.call(sourceInput, '')
       sourceInput.dispatchEvent(new Event('input', { bubbles: true }))
       await delay(150)
+      result.updates.disabledAfterClear = checkButton.disabled === true
     }
     result.errors = window.__smokeErrors
     return result
@@ -1586,7 +1596,10 @@ async function main() {
   expect(userToolApi.codeExportsMount, 'user tool source is missing the mount export')
   expect(userToolApi.invalidIdRejected, 'invalid user tool id was not rejected')
   expect(userToolApi.traversalRejected, 'path traversal user tool id was not rejected')
-  expect(userToolUi.cardCount === 10, `expected 10 tool cards after install, found ${userToolUi.cardCount}`)
+  expect(
+    userToolUi.cardCount === ui.cardCount + 1,
+    `expected ${ui.cardCount + 1} tool cards after install, found ${userToolUi.cardCount}`
+  )
   expect(userToolUi.names?.includes('Text stats'), 'installed user tool is missing from the dashboard')
   expect(userToolUi.badge?.includes('User tool'), 'user tool card is missing its badge')
   expect(userToolUi.tagged, 'user tool page is missing its installed-tool banner')
@@ -1600,7 +1613,10 @@ async function main() {
       userToolUi.rowBadgeLabels?.includes('User'),
     'manage tools is missing its connected/user badges'
   )
-  expect(userToolUi.switchCount === 16, 'manage tools did not list the user tool switch')
+  expect(
+    userToolUi.switchCount === ui.customization.switchCount + 1,
+    'manage tools did not list the user tool switch'
+  )
   expect(userToolUi.userSection, 'manage tools is missing the user tools section')
   expect(userToolUi.actions?.length === 3, 'user tools panel is missing its actions')
   expect(userToolUi.errors?.length === 0, `user tool renderer errors: ${userToolUi.errors?.join(' | ')}`)
@@ -1618,11 +1634,16 @@ async function main() {
   expect(userToolUi.updates?.section, 'manage tools is missing the app updates section')
   expect(userToolUi.updates?.field, 'app updates section is missing its source field')
   expect(/Check now/.test(userToolUi.updates?.checkLabel ?? ''), 'app updates section is missing its check button')
-  expect(userToolUi.updates?.checkDisabled === true, 'update check should wait for a release source')
+  expect(userToolUi.updates?.sourceValue === 'acsdd/toolbox-desktop', 'default release source is not shown')
+  expect(userToolUi.updates?.checkDisabled === false, 'default release source should enable update checks')
   expect(/Installed v\d+\.\d+\.\d+/.test(userToolUi.updates?.installed ?? ''), 'app updates section is missing the installed version')
   expect(userToolUi.updates?.enabledAfterSource, 'update check did not enable after entering a source')
+  expect(userToolUi.updates?.disabledAfterClear, 'update check did not disable after clearing the source')
   expect(miniEntry.miniBar, 'mini bar did not appear')
-  expect(miniEntry.toolIcons === 16, `mini bar shows ${miniEntry.toolIcons} tool icons, expected 16`)
+  expect(
+    miniEntry.toolIcons === userToolUi.switchCount,
+    `mini bar shows ${miniEntry.toolIcons} tool icons, expected ${userToolUi.switchCount}`
+  )
   expect(miniEntry.hasExpand, 'mini bar is missing the expand control')
   expect(miniEntry.hasManage, 'mini bar is missing the manage control')
   expect(miniEntry.hasPin, 'mini bar is missing the pin control')
@@ -1636,9 +1657,10 @@ async function main() {
     'always-on-top toggle did not switch off'
   )
   expect(unpinnedState === false, 'window did not clear always-on-top')
+  const expectedCompactWidth = Math.max(380, Math.min(960, 207 + miniEntry.toolIcons * 39))
   expect(
-    compactSize[1] <= 120 && compactSize[0] >= 360 && compactSize[0] < 900,
-    `compact window size is ${compactSize.join('x')}`
+    compactSize[1] <= 120 && compactSize[0] === expectedCompactWidth,
+    `compact window size is ${compactSize.join('x')}, expected width ${expectedCompactWidth}`
   )
   expect(miniAction.openedTool === 'Quick notes', 'mini tool icon did not open its tool')
   expect(!miniAction.barAfterOpen, 'mini bar stayed open after opening a tool')
@@ -1909,11 +1931,15 @@ async function main() {
   expect(headerUi.openedClockSearch, 'empty header weather state did not open city search')
   expect(headerUi.cityUpdated, `header did not show the chosen city: ${headerUi.headerTextAfterCity}`)
   expect(headerUi.setCityRestored, 'header did not return to the empty weather state')
-  // Nine tools wrap to a third row at the default window size, so the
-  // dashboard scrolls by one row; the guard catches unbounded overflow.
+  // The dashboard can scroll as the tool inventory grows, but its overflow
+  // must track the grid and must never expand horizontally.
   expect(
-    headerUi.homeOverflow <= 260,
-    `dashboard scrolls at the default window height (overflow ${headerUi.homeOverflow}px)`
+    headerUi.homeOverflow <= headerUi.homeGridHeight + 260,
+    `dashboard overflow (${headerUi.homeOverflow}px) exceeds its grid height (${headerUi.homeGridHeight}px)`
+  )
+  expect(
+    headerUi.homeHorizontalOverflow <= 1,
+    `dashboard overflows horizontally by ${headerUi.homeHorizontalOverflow}px`
   )
   expect(vaultMenuUi.cardFound, 'vault card is missing for the context-menu test')
   expect(vaultMenuUi.menuOpen, 'right-click did not open the vault secret menu')

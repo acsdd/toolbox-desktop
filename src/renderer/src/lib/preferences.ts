@@ -9,6 +9,7 @@ export const CARD_SIZE_KEY = 'toolbox.cardSize'
 export const HOME_PAGE_KEY = 'toolbox.homePage'
 export const WEATHER_CITY_KEY = 'toolbox.weatherCity'
 export const UPDATE_SOURCE_KEY = 'toolbox.updateSource'
+export const DEFAULT_UPDATE_SOURCE = 'acsdd/toolbox-desktop'
 export const CONFIG_RESTORED_EVENT = 'toolbox:config-restored'
 
 export type CardSize = 'small' | 'medium' | 'large'
@@ -23,8 +24,12 @@ export function readHomePage(): HomePage {
   return localStorage.getItem(HOME_PAGE_KEY) === 'connected' ? 'connected' : 'workspace'
 }
 
+export function resolveUpdateSource(saved: string | null): string {
+  return saved === null ? DEFAULT_UPDATE_SOURCE : saved.trim()
+}
+
 export function readUpdateSource(): string {
-  return localStorage.getItem(UPDATE_SOURCE_KEY)?.trim() ?? ''
+  return resolveUpdateSource(localStorage.getItem(UPDATE_SOURCE_KEY))
 }
 
 export function readBackupConfig(): BackupConfig {
