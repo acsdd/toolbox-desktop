@@ -1,0 +1,209 @@
+.text-compare {
+  --text-compare-added: #8edab1;
+  --text-compare-removed: #f6a7ad;
+  container-type: inline-size;
+  display: grid;
+  gap: var(--family-space-3, 12px);
+  min-width: 0;
+}
+
+:root[data-theme="day"] .text-compare {
+  --text-compare-added: #216443;
+  --text-compare-removed: #992e3c;
+}
+
+.text-compare p {
+  margin: 0;
+}
+
+.text-compare-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--family-space-3, 12px);
+}
+
+.text-compare-field {
+  display: grid;
+  align-content: start;
+  gap: var(--family-space-2, 8px);
+  min-width: 0;
+}
+
+.text-compare-field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.text-compare-field textarea {
+  display: block;
+  width: 100%;
+  min-height: 7rem;
+  padding: var(--family-space-3, 12px);
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: var(--family-radius-control, 10px);
+  color: var(--text);
+  background: var(--bg);
+  font: 0.8125rem/1.5 'Cascadia Code', Consolas, monospace;
+  tab-size: 4;
+}
+
+.text-compare-field textarea::placeholder {
+  color: var(--muted);
+}
+
+.text-compare-field textarea[aria-invalid="true"] {
+  border-color: var(--text-compare-removed);
+}
+
+.text-compare-error {
+  color: var(--text-compare-removed);
+  font-size: 0.8125rem;
+}
+
+.text-compare-controls,
+.text-compare-result-head,
+.text-compare-pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--family-space-2, 8px) var(--family-space-3, 12px);
+}
+
+.text-compare-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--family-space-2, 8px);
+  min-height: 2rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.text-compare-option input {
+  margin: 0;
+  accent-color: var(--theme-accent, var(--accent));
+}
+
+.text-compare-result {
+  display: grid;
+  gap: var(--family-space-2, 8px);
+  min-width: 0;
+  border-top: 1px solid var(--border-soft);
+  padding-top: var(--family-space-3, 12px);
+}
+
+.text-compare-result-head,
+.text-compare-pages {
+  justify-content: space-between;
+}
+
+.text-compare-result-head h2 {
+  margin: 0 0 var(--family-space-1, 4px);
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.text-compare-copy-status {
+  font-size: 0.8125rem;
+}
+
+.text-compare-copy-status:empty {
+  position: absolute;
+}
+
+.text-compare-preview {
+  min-width: 0;
+  max-height: 26rem;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--family-radius-control, 10px);
+}
+
+.text-compare-preview:focus-visible {
+  outline: 2px solid var(--family-focus, var(--accent));
+  outline-offset: 3px;
+}
+
+.text-compare-rows {
+  min-width: 100%;
+  width: max-content;
+  font: 0.8125rem/1.45 'Cascadia Code', Consolas, monospace;
+  tab-size: 4;
+}
+
+.text-compare-rows code {
+  font: inherit;
+  white-space: pre;
+}
+
+.text-compare-hunk {
+  padding: var(--family-space-1, 4px) var(--family-space-2, 8px);
+  background: var(--panel-raised);
+  color: var(--muted);
+}
+
+.text-compare-line {
+  display: grid;
+  grid-template-columns: 4ch 4ch 7ch 1fr;
+  column-gap: var(--family-space-2, 8px);
+  padding: var(--family-space-1, 4px) var(--family-space-2, 8px);
+  border-left: 2px solid transparent;
+}
+
+.text-compare-line--added {
+  --line-accent: var(--text-compare-added);
+}
+
+.text-compare-line--removed {
+  --line-accent: var(--text-compare-removed);
+}
+
+.text-compare-line:is(.text-compare-line--added, .text-compare-line--removed) {
+  border-left-color: var(--line-accent);
+  background: color-mix(in srgb, var(--line-accent) 9%, var(--bg));
+}
+
+.text-compare-line-number {
+  color: var(--muted);
+  text-align: right;
+  user-select: none;
+}
+
+.text-compare-line-label {
+  color: var(--line-accent, var(--muted));
+  font-size: 0.75rem;
+  font-weight: 600;
+  user-select: none;
+}
+
+.text-compare-newline {
+  grid-column: 4;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+@container (max-width: 34rem) {
+  .text-compare-inputs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .text-compare-field textarea {
+    min-height: 6rem;
+  }
+}
+
+@container (max-width: 17rem) {
+  .text-compare-line {
+    grid-template-columns: 7ch 1fr;
+  }
+
+  .text-compare-line-number {
+    display: none;
+  }
+
+  .text-compare-newline {
+    grid-column: 2;
+  }
+}

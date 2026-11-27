@@ -63,6 +63,12 @@ Open Model Farm to see this PC scored on memory, GPU, compute and storage, then 
 
 ### Diagnostics and practical widgets
 
+- **Text Compare** compares two pasted versions line by line, supports ignoring whitespace, and copies a unified diff. Inputs stay in the current view and are limited to 256 KiB and 5,000 lines each.
+- **Downloads Inbox** filters a selected folder by file name, type, and modification time, then reveals a file in Explorer. It inspects one directory level and labels capped results as partial.
+- **Meeting Planner** finds working-hours overlap across up to four time zones, including daylight-saving changes, and copies each zone's local meeting time.
+- **File Verification** streams a selected file through SHA-256 with progress and cancellation, then compares the result with an optional expected digest. A file that changes during the read requires another calculation.
+- **Workspace Kits** saves groups of selected folders and enabled AI launchpad shortcuts. Review the targets before opening a kit, then see the result for each target.
+- **Power & Battery** reads Windows power source, battery charge, and estimated remaining time where available. It also handles PCs without a battery. Laptop charge and run-time readings require hardware validation.
 - **Network & services** runs saved DNS, TCP and HTTP checks only when requested, and keeps the previous result for comparison.
 - **Toolbox connections** checks the default local Router and AstrLink ports and reports the Router's MCP readiness. It does not read credentials or send a model request; a reachable gateway alone does not establish provider health.
 - **Incident report** prepares an editable report locally. Windows System errors are optional; review them before sharing. Save support destinations and either open an email draft or confirm a direct send through the Gmail account connected in Gmail announcer. Drafts may require shortening for the mail application; direct Gmail sends support longer reports.

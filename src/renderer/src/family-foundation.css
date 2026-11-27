@@ -1,0 +1,61 @@
+/* Toolbox family UI v1. Canonical source: brand-assets/family-ui/foundation.css.
+   Copy with sync.mjs. Keep application palettes and layouts in their adapters. */
+:root {
+  --family-font: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --family-space-1: 4px;
+  --family-space-2: 8px;
+  --family-space-3: 12px;
+  --family-space-4: 16px;
+  --family-space-5: 24px;
+  --family-space-6: 32px;
+  --family-space-7: 48px;
+  --family-radius-control: 10px;
+  --family-radius-card: 18px;
+  --family-radius-feature: 24px;
+  --family-duration: 160ms;
+  --family-ease: cubic-bezier(.2, .7, .2, 1);
+  --family-shadow: 0 12px 36px #00000018;
+  --family-shadow-overlay: 0 24px 80px #00000040;
+  --family-glass-shine: 13%;
+  --family-glass-sheen: linear-gradient(155deg, color-mix(in srgb, white var(--family-glass-shine), transparent), transparent 56%);
+  --family-glass-edge: inset 0 1px 0 color-mix(in srgb, white max(20%, var(--family-glass-shine)), transparent), inset 0 -1px 0 #00000012;
+  --family-glass-shadow: var(--family-glass-edge), 0 6px 20px #0000001c;
+  --family-glass-button: linear-gradient(180deg, #ffffff32, transparent 52%, #00000012);
+}
+
+:root[data-theme="day"] {
+  --family-glass-edge: inset 0 1px 0 #fffffff2, inset 0 -1px 0 #22224d0d;
+}
+
+body {
+  font-family: var(--family-font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:where(button, input, select, textarea) { font: inherit; }
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--family-focus, var(--accent));
+  outline-offset: 3px;
+}
+:where(button, summary) { -webkit-tap-highlight-color: transparent; }
+:where(button:disabled) { cursor: not-allowed; }
+::selection { background: var(--family-selection, #8ba4ff55); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(button, a, input, select, textarea, summary):focus-visible {
+    outline: 2px solid Highlight;
+  }
+  :where([aria-current="page"], [aria-selected="true"], [aria-pressed="true"]) {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
+}

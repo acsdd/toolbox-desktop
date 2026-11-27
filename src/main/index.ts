@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, screen, shell } from 'electron'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { runDiagnostic, collectIncident } from './services/diagnostics'
 import { integrationStatus } from './services/integration'
 import { listProjects, fetchProject } from './services/projects'
@@ -8,6 +9,7 @@ import { snapshotServices } from './services/configuration'
 import { inspectAiEndpoint } from './services/ai-monitor'
 import { initReminders, listReminders, addReminder, removeReminder, stopReminders } from './services/reminders'
 import { clipboardHistory } from './services/clipboard-history'
+import { registerDesktopWidgetIpc } from './services/desktop-widget-ipc'
 import { getProcesses, getSystemStats } from './services/system-info'
 import { listFiles, organizeFolder } from './services/file-organizer'
 import { addSecret, copySecret, listSecrets, removeSecret } from './services/vault'
@@ -165,6 +167,8 @@ function setCompactWindow(window: BrowserWindow, compact: boolean, width: unknow
 }
 
 function registerIpc(): void {
+  const rendererUrl = process.env['ELECTRON_RENDERER_URL'] ?? pathToFileURL(join(__dirname, '../renderer/index.html')).href
+  registerDesktopWidgetIpc(rendererUrl)
   ipcMain.handle('integration:status', () => integrationStatus())
   ipcMain.handle('ai-monitor:check', (_event, input:unknown) => inspectAiEndpoint(input))
   ipcMain.handle('configuration:services', (_event, names:unknown) => snapshotServices(names))

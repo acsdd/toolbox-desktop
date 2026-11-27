@@ -12,6 +12,26 @@ const api: ToolboxApi = {
   aiMonitor: {check:input=>ipcRenderer.invoke('ai-monitor:check',input)},
   configuration: { services:names=>ipcRenderer.invoke('configuration:services',names) },
   diskExplorer: {pickFolder:()=>ipcRenderer.invoke('disk-explorer:pick-folder'),scan:path=>ipcRenderer.invoke('disk-explorer:scan',path),capacity:path=>ipcRenderer.invoke('disk-explorer:capacity',path)},
+  downloadsInbox: {
+    refresh: () => ipcRenderer.invoke('downloads-inbox:refresh'),
+    pick: () => ipcRenderer.invoke('downloads-inbox:pick'),
+    reveal: name => ipcRenderer.invoke('downloads-inbox:reveal', name)
+  },
+  fileVerification: {
+    pick: () => ipcRenderer.invoke('file-verification:pick'),
+    run: id => ipcRenderer.invoke('file-verification:run', id),
+    progress: id => ipcRenderer.invoke('file-verification:progress', id),
+    cancel: id => ipcRenderer.invoke('file-verification:cancel', id)
+  },
+  workspaceKits: {
+    list: () => ipcRenderer.invoke('workspace-kits:list'),
+    pickFolder: () => ipcRenderer.invoke('workspace-kits:pick-folder'),
+    save: input => ipcRenderer.invoke('workspace-kits:save', input),
+    remove: id => ipcRenderer.invoke('workspace-kits:remove', id),
+    inspect: id => ipcRenderer.invoke('workspace-kits:inspect', id),
+    open: id => ipcRenderer.invoke('workspace-kits:open', id)
+  },
+  powerBattery: { read: () => ipcRenderer.invoke('power-battery:read') },
   reminders: {list:()=>ipcRenderer.invoke('reminders:list'),add:input=>ipcRenderer.invoke('reminders:add',input),remove:id=>ipcRenderer.invoke('reminders:remove',id)},
   projects: { pickFolder: () => ipcRenderer.invoke('projects:pick-folder'), list: path => ipcRenderer.invoke('projects:list', path), fetch:path => ipcRenderer.invoke('projects:fetch',path) },
   diagnostics: { run: input => ipcRenderer.invoke('diagnostics:run', input), incident: includeEvents => ipcRenderer.invoke('diagnostics:incident', includeEvents), emailDraft: input => ipcRenderer.invoke('diagnostics:email-draft', input), sendEmail: input => ipcRenderer.invoke('diagnostics:send-email', input) },

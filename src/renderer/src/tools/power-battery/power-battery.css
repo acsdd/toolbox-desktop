@@ -1,0 +1,84 @@
+.power-battery {
+  display: grid;
+  gap: var(--family-space-4);
+  max-width: 38rem;
+}
+
+.power-battery__summary {
+  display: grid;
+  gap: var(--family-space-2);
+  padding: var(--family-space-5);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--family-radius-card);
+  background: var(--family-glass-sheen), var(--bg);
+  box-shadow: var(--family-glass-edge);
+}
+
+.power-battery__label,
+.power-battery__metrics dt,
+.power-battery__checked {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.power-battery__charge {
+  font-size: 2rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.power-battery__message {
+  margin: 0;
+  font-weight: 600;
+}
+
+.power-battery__meter {
+  height: 0.5rem;
+  margin-top: var(--family-space-1);
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.power-battery__meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--theme-accent);
+}
+
+.power-battery__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+  gap: var(--family-space-2);
+  margin: 0;
+}
+
+.power-battery__metrics div {
+  display: grid;
+  gap: var(--family-space-1);
+  padding: var(--family-space-3);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--family-radius-control);
+  background: var(--bg);
+}
+
+.power-battery__metrics dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.power-battery__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--family-space-2) var(--family-space-3);
+}
+
+.power-battery__actions .primary-button[aria-disabled='true'] {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.power-battery__checked {
+  margin: 0;
+}

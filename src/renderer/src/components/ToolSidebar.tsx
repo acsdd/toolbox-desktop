@@ -25,6 +25,7 @@ export function ToolSidebar({ tools, activeId, onHome, onManage, onOpen }: ToolS
         aria-current={activeId === 'home' ? 'page' : undefined}
       >
         <Icon name="grid" size={18} />
+        <span className="sidebar-tool-label">Overview</span>
       </button>
 
       <div className="sidebar-groups">
@@ -43,6 +44,7 @@ export function ToolSidebar({ tools, activeId, onHome, onManage, onOpen }: ToolS
                   aria-current={activeId === tool.id ? 'page' : undefined}
                 >
                   <Icon name={tool.icon} size={18} />
+                  <span className="sidebar-tool-label">{tool.name}</span>
                 </button>
               ))}
             </div>
@@ -58,6 +60,7 @@ export function ToolSidebar({ tools, activeId, onHome, onManage, onOpen }: ToolS
         aria-current={activeId === 'settings' ? 'page' : undefined}
       >
         <Icon name="settings" size={18} />
+        <span className="sidebar-tool-label">Manage tools</span>
       </button>
     </nav>
   )

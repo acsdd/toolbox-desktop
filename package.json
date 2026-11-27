@@ -22,6 +22,7 @@
     "test": "node --test test/*.test.ts",
     "smoke": "npm run build && electron scripts/smoke.cjs",
     "smoke:ux": "npm run build && electron scripts/ux-smoke.cjs",
+    "smoke:widgets": "npm run build && electron scripts/widgets-smoke.cjs",
     "screenshots": "npm run build && electron scripts/screenshots.cjs",
     "dist": "npm run build && electron-builder --win",
     "release:notes": "node scripts/release-notes.cjs",

@@ -191,15 +191,16 @@ app.whenReady().then(async () => {
   await waitFor(win, `() => document.documentElement.dataset.theme === 'day'`, 'Day theme')
   await waitFor(
     win,
-    `() => getComputedStyle(document.querySelector('.terminal-button')).color === 'rgb(36, 63, 49)'`,
+    `() => getComputedStyle(document.querySelector('.terminal-button')).color === getComputedStyle(document.body).color`,
     'Day terminal colors'
   )
   const dayColors = await win.webContents.executeJavaScript(`(() => ({
     sidebarBackground: getComputedStyle(document.querySelector('.tool-sidebar')).backgroundImage,
-    terminalColor: getComputedStyle(document.querySelector('.terminal-button')).color
+    terminalColor: getComputedStyle(document.querySelector('.terminal-button')).color,
+    textColor: getComputedStyle(document.body).color
   }))()`)
   assert.notEqual(dayColors.sidebarBackground, nightSidebarBackground, 'Sidebar must follow the Day theme')
-  assert.equal(dayColors.terminalColor, 'rgb(36, 63, 49)', 'Terminal button must use Day theme text')
+  assert.equal(dayColors.terminalColor, dayColors.textColor, 'Terminal button must use Day theme text')
 
   await click(win, '.sidebar-tool[aria-label="Model Farm"]')
   await waitFor(
@@ -215,7 +216,7 @@ app.whenReady().then(async () => {
   )
   assert.equal(
     dayActiveToolColor,
-    'rgb(36, 63, 49)',
+    dayColors.textColor,
     'Active sidebar tools must use Day theme text'
   )
   const activeContrast = await readActiveStateContrast(win)
@@ -269,8 +270,8 @@ app.whenReady().then(async () => {
     tool: false,
     input: true,
     status: true,
-    terminalColor: 'rgb(36, 63, 49)',
-    placeholderColor: 'rgb(143, 169, 199)'
+    terminalColor: dayColors.textColor,
+    placeholderColor: await win.webContents.executeJavaScript(`(() => { const node=document.createElement('span'); node.style.color='var(--muted)'; document.body.append(node); const color=getComputedStyle(node).color; node.remove(); return color; })()`)
   })
   console.log('UX: terminal-only view checked')
 

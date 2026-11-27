@@ -12,6 +12,7 @@ import { tools } from './tools/registry'
 import type { ToolDefinition } from './tools/types'
 import { UserToolView } from './user-tools/UserToolView'
 import { ArtistWavePage } from './tools/artistwave/ArtistWavePage'
+import familyMark from './assets/toolbox-mark.svg'
 import {
   CARD_SIZE_KEY,
   COMPACT_KEY,
@@ -454,7 +455,7 @@ function App() {
           <header className="topbar">
             <div className="topbar-left">
               <button className="brand" onClick={() => setView({ kind: 'home' })} title="Toolbox home">
-                <span className="brand-mark">T</span>
+                <span className="brand-mark"><img src={familyMark} alt="" /></span>
                 <span className="brand-text">
                   <strong>Toolbox</strong>
                 </span>
@@ -662,7 +663,7 @@ function MiniBar({
         title="Open dashboard"
         aria-label="Open dashboard"
       >
-        <span className="brand-mark small">T</span>
+        <span className="brand-mark small"><img src={familyMark} alt="" /></span>
       </button>
 
       <div className="mini-tools">
@@ -745,7 +746,7 @@ function ToolRail({
         title="Open dashboard"
         aria-label="Open dashboard"
       >
-        <span className="brand-mark small">T</span>
+        <span className="brand-mark small"><img src={familyMark} alt="" /></span>
       </button>
 
       <div className="rail-tools">
@@ -827,7 +828,7 @@ function Home({
   return (
     <div className={`home cards-${cardSize}`}>
       <div className="hero">
-        <div>
+        <div className="home-hero-copy">
           <div className="home-switch" role="tablist" aria-label="Tool pages">
             <button
               role="tab"
@@ -848,18 +849,19 @@ function Home({
               <span className="home-switch-count">{counts.connected}</span>
             </button>
           </div>
+          <div className="family-eyebrow">{connected ? 'YOUR CONNECTED WORLD' : 'A LITTLE SPACE TO GET THINGS DONE'}</div>
           <h1>
             {connected ? (
               <>
                 Your services,
                 <br />
-                one dashboard.
+                <span>one dashboard.</span>
               </>
             ) : (
               <>
                 Everything you need,
                 <br />
-                one window.
+                <span>one window.</span>
               </>
             )}
           </h1>
@@ -869,6 +871,17 @@ function Home({
               : 'Your local tools, ready when you need them.'}
           </p>
         </div>
+        <div className="workspace-art" aria-hidden="true">
+          <div className="workspace-orbit" />
+          <div className="workspace-art-tile tile-main"><Icon name={connected ? 'cloud' : 'grid'} size={38} /></div>
+          <div className="workspace-art-tile tile-note"><Icon name="notes" size={26} /></div>
+          <div className="workspace-art-tile tile-spark"><Icon name="spark" size={28} /></div>
+          <div className="workspace-art-tile tile-shield"><Icon name="shield" size={22} /></div>
+          <div className="workspace-art-caption">{connected ? 'Connected. Collected.' : 'Your everyday workspace.'}</div>
+        </div>
+      </div>
+      <div className="library-toolbar">
+        <div className="library-heading"><h2>{connected ? 'Connected tools' : 'Your tools'}</h2><span>{visibleTools.length} available</span></div>
         <div className="hero-actions">
           <div className="card-size-control" role="group" aria-label="Card size">
             {CARD_SIZES.map((option) => (

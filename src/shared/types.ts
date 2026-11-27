@@ -1,3 +1,7 @@
+import type { InboxSnapshot, VerificationFile, VerificationProgress } from './widget-files'
+import type { KitEdit, KitFolder, KitLaunch, KitTarget, WorkspaceKit } from './workspace-kits'
+import type { PowerBatteryReading } from './power-battery'
+
 export interface ClipItem {
   id: string
   text: string
@@ -615,6 +619,26 @@ export interface ToolboxApi {
   aiMonitor: { check(input:{kind:'ollama'|'lmstudio';url:string}): Promise<AiEndpointResult> }
   configuration: { services(names:string): Promise<ServiceSnapshot> }
   diskExplorer: { pickFolder(): Promise<string | null>; scan(path:string): Promise<DiskScan>; capacity(path:string): Promise<{total:number;free:number}> }
+  downloadsInbox: {
+    refresh(): Promise<InboxSnapshot>
+    pick(): Promise<InboxSnapshot | null>
+    reveal(name: string): Promise<void>
+  }
+  fileVerification: {
+    pick(): Promise<VerificationFile | null>
+    run(id: string): Promise<string | null>
+    progress(id: string): Promise<VerificationProgress | null>
+    cancel(id: string): Promise<void>
+  }
+  workspaceKits: {
+    list(): Promise<WorkspaceKit[]>
+    pickFolder(): Promise<KitFolder | null>
+    save(input: KitEdit): Promise<WorkspaceKit>
+    remove(id: string): Promise<void>
+    inspect(id: string): Promise<KitTarget[]>
+    open(id: string): Promise<KitLaunch[]>
+  }
+  powerBattery: { read(): Promise<PowerBatteryReading> }
   reminders: { list(): Promise<ToolboxReminder[]>; add(input: {name:string;dueAt:number;repeat:ToolboxReminder['repeat']}): Promise<ToolboxReminder[]>; remove(id:string): Promise<ToolboxReminder[]> }
   projects: { pickFolder(): Promise<string | null>; list(path:string): Promise<ProjectStatus[]>; fetch(path:string): Promise<void> }
   diagnostics: { run(input: DiagnosticCheck): Promise<DiagnosticResult>; incident(includeEvents: boolean): Promise<IncidentSnapshot>; emailDraft(input: {recipient: string; subject: string; body: string}): Promise<void>; sendEmail(input: {recipient: string; subject: string; body: string}): Promise<{recipient:string}> }
