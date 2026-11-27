@@ -8,6 +8,7 @@ import { HeaderStatus } from './components/HeaderStatus'
 import { PlayerButton } from './components/PlayerButton'
 import { TerminalView } from './components/TerminalView'
 import { ToolSidebar } from './components/ToolSidebar'
+import { ToolFinder } from './components/ToolFinder'
 import { tools } from './tools/registry'
 import type { ToolDefinition } from './tools/types'
 import { UserToolView } from './user-tools/UserToolView'
@@ -111,6 +112,17 @@ function errorMessage(cause: unknown): string {
 }
 
 function App() {
+  const [finderOpen, setFinderOpen] = useState(false)
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => {
+      if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'k' && !document.querySelector('dialog[open], [aria-modal="true"]')) {
+        event.preventDefault()
+        setFinderOpen(true)
+      }
+    }
+    window.addEventListener('keydown', key)
+    return () => window.removeEventListener('keydown', key)
+  }, [])
   const [theme, setTheme] = useState(readTheme)
   const [view, setView] = useState<View>({ kind: 'home' })
   const [playerStarted, setPlayerStarted] = useState(false)
@@ -223,7 +235,7 @@ function App() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return
+      if (event.defaultPrevented || event.key !== 'Escape') return
       if (hostWidget) setHostWidget(null)
       else if (compact) setCompact(false)
       else setView({ kind: 'home' })
@@ -437,6 +449,7 @@ function App() {
 
   return (
     <div className={`app ${compact ? 'app-compact' : ''} ${playerMini ? 'app-player-mini' : ''}`}>
+      {finderOpen && <ToolFinder tools={visibleTools} onOpen={openTool} onClose={() => setFinderOpen(false)} />}
       {compact ? (
         <MiniBar
           tools={visibleTools}
@@ -493,6 +506,7 @@ function App() {
             </div>
 
             <div className="topbar-actions">
+              <button className="ghost-button tool-finder-button" onClick={() => setFinderOpen(true)} title="Find a tool (Ctrl+K)">Find tool <kbd>Ctrl+K</kbd></button>
               <label className="suite-theme"><span>Select theme</span><select aria-label="Color theme" value={theme} onChange={event => setTheme(event.target.value)}>{THEMES.map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
               <button
                 className="icon-button mini-toggle"

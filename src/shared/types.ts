@@ -604,7 +604,9 @@ export interface ProjectStatus { name:string; path:string; branch:string; change
 
 export interface ToolboxReminder { id:string; name:string; dueAt:number; repeat:'none' | 'daily' | 'weekly'; done:boolean }
 
-export interface DiskScan {path:string;name:string;entries:{name:string;bytes:number}[];totalBytes:number;skipped:number;truncated:boolean;scannedAt:number}
+export interface DiskScanProgress { scannedEntries: number; totalBytes: number; skipped: number; elapsedMs: number }
+export interface DiskScan extends DiskScanProgress {path:string;name:string;entries:{name:string;bytes:number}[];truncated:boolean;cancelled:boolean;scannedAt:number}
+export type DiskScanUpdate = { id: string; status: 'running'; progress: DiskScanProgress } | { id: string; status: 'completed' | 'cancelled' | 'truncated'; result: DiskScan } | { id: string; status: 'failed'; error: string }
 
 export interface ServiceSnapshot {takenAt:number;services:{name:string;status:string;startType:string}[]}
 
@@ -614,7 +616,7 @@ export interface ToolboxApi {
   integration: { status(): Promise<IntegrationStatus> }
   aiMonitor: { check(input:{kind:'ollama'|'lmstudio';url:string}): Promise<AiEndpointResult> }
   configuration: { services(names:string): Promise<ServiceSnapshot> }
-  diskExplorer: { pickFolder(): Promise<string | null>; scan(path:string): Promise<DiskScan>; capacity(path:string): Promise<{total:number;free:number}> }
+  diskExplorer: { pickFolder(): Promise<string | null>; scan(path:string): Promise<DiskScan>; start(path:string): Promise<{id:string}>; cancel(id:string): Promise<void>; onUpdate(callback:(update:DiskScanUpdate)=>void):()=>void; capacity(path:string): Promise<{total:number;free:number}> }
   reminders: { list(): Promise<ToolboxReminder[]>; add(input: {name:string;dueAt:number;repeat:ToolboxReminder['repeat']}): Promise<ToolboxReminder[]>; remove(id:string): Promise<ToolboxReminder[]> }
   projects: { pickFolder(): Promise<string | null>; list(path:string): Promise<ProjectStatus[]>; fetch(path:string): Promise<void> }
   diagnostics: { run(input: DiagnosticCheck): Promise<DiagnosticResult>; incident(includeEvents: boolean): Promise<IncidentSnapshot>; emailDraft(input: {recipient: string; subject: string; body: string}): Promise<void>; sendEmail(input: {recipient: string; subject: string; body: string}): Promise<{recipient:string}> }
